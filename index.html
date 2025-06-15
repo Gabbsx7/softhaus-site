@@ -1,147 +1,396 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" x-data="site()" @keydown.window.escape="closeAll()">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Softhaus</title>
-  <!-- Google Fonts -->
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&family=Inter:wght@400&display=swap" rel="stylesheet">
-  <!-- Tailwind CSS via CDN -->
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.3.5/dist/tailwind.min.css" rel="stylesheet">
-  <!-- Local fallback (placeholder) -->
-  <link href="tailwind.css" rel="stylesheet">
-  <style>
-    body { font-family: 'Inter', sans-serif; color: #1F1F1F; background-color: #F8F9FC; }
-    h1,h2,h3 { font-family: 'Poppins', sans-serif; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Softhaus – Desenvolvimento Ágil</title>
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+
   <script>
-    document.addEventListener('DOMContentLoaded', function(){
-      document.documentElement.style.scrollBehavior = 'smooth';
-    });
+    const SUPABASE_URL = 'https://vfolhmfhdsinqqgdssve.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmb2xobWZoZHNpbnFxZ2Rzc3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4OTMzOTMsImV4cCI6MjA2MjQ2OTM5M30.LXOTfL9SmnQR7N9Dl3BfI4L5Z3OhoQckvuraD2CdXgg';
+    window.$supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  </script>
+
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#C92C7D',
+            accent:  '#7E33FF',
+            cta:     '#00C8FF',
+            light:   '#F8F9FC',
+            dark:    '#070814',
+            card:    '#1A1A2E',
+            surface: '#16213E'
+          },
+          fontFamily: {
+            sans:    ['Inter', 'system-ui', 'sans-serif'],
+            heading: ['Poppins', 'system-ui', 'sans-serif']
+          },
+          animation: {
+            float:    'float 6s ease-in-out infinite',
+            glow:     'glow 2s ease-in-out infinite alternate',
+            slideUp:  'slideUp .6s ease-out',
+            fadeIn:   'fadeIn .8s ease-out'
+          },
+          keyframes: {
+            float:    { '0%,100%': { transform:'translateY(0)' }, '50%': { transform:'translateY(-20px)' } },
+            glow:     { '0%': { boxShadow:'0 0 20px rgba(199,44,125,.5)' }, '100%': { boxShadow:'0 0 30px rgba(199,44,125,.8)' } },
+            slideUp:  { '0%': { transform:'translateY(30px)', opacity:'0' }, '100%': { transform:'translateY(0)', opacity:'1' } },
+            fadeIn:   { '0%': { opacity:'0' }, '100%': { opacity:'1' } }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- AOS & Alpine -->
+  <link rel="stylesheet" href="https://unpkg.com/aos@2.3.4/dist/aos.css" />
+  <script defer src="https://unpkg.com/aos@2.3.4/dist/aos.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    body{background:#070814;color:#F8F9FC;font-family:'Inter',sans-serif}
+    h1,h2,h3,h4{font-family:'Poppins',sans-serif}
+    .btn-primary{background:linear-gradient(135deg,#7E33FF 0%,#C92C7D 100%);box-shadow:0 8px 32px rgba(126,51,255,.3);transition:.3s;position:relative;overflow:hidden}
+    .btn-primary::before{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.2),transparent);transition:left .5s}
+    .btn-primary:hover::before{left:100%}
+    .btn-primary:hover{transform:translateY(-3px);box-shadow:0 12px 40px rgba(126,51,255,.4)}
+    .btn-secondary{background:rgba(255,255,255,.1);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);transition:.3s}
+    .btn-secondary:hover{background:rgba(255,255,255,.2);transform:translateY(-2px)}
+    .card-glass{background:rgba(26,26,46,.7);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);transition:.4s}
+    .card-glass:hover{background:rgba(26,26,46,.9);border-color:rgba(126,51,255,.5);transform:translateY(-8px);box-shadow:0 20px 60px rgba(126,51,255,.2)}
+    .icon-container{background:linear-gradient(135deg,rgba(126,51,255,.2) 0%,rgba(199,44,125,.2) 100%);transition:.3s}
+    .icon-container:hover{background:linear-gradient(135deg,rgba(126,51,255,.4) 0%,rgba(199,44,125,.4) 100%);transform:scale(1.1)}
+    .navbar-glass{background:rgba(7,8,20,.8);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,.1)}
+    .text-gradient{background:linear-gradient(135deg,#7E33FF 0%,#C92C7D 50%,#00C8FF 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  </style>
+<script>
+    document.addEventListener('DOMContentLoaded',()=>AOS.init({duration:800,once:true,easing:'ease-out-cubic'}));
+
+    /* Alpine component ------------------------------------------------------ */
+    function site(){
+      return{
+        navOpen:false,
+        modal:false,
+        modalCard:null,
+        form:{nome:'',email:'',empresa:'',numero:'',projeto:'',orcamento:'',prazo:''},
+
+        openForm(){ this.modal=true; this.modalCard=null; document.body.classList.add('overflow-hidden') },
+        openCard(i){ this.modal=true; this.modalCard=i;  document.body.classList.add('overflow-hidden') },
+        closeAll(){ this.modal=false; this.modalCard=null; document.body.classList.remove('overflow-hidden') },
+
+        /* submit -> grava em public.leads ----------------------------------- */
+        submit: async function(){
+          const payload = {
+            nome:        this.form.nome,
+            email:       this.form.email,
+            empresa:     this.form.empresa,
+            telefone:    this.form.numero,
+            descrição:   this.form.projeto,   // coluna "descrição"
+            orçamento:   this.form.orcamento, // se a coluna tiver espaço/cedilha
+            prazo:       this.form.prazo
+          };
+
+          const { error } = await $supabase.from('leads').insert(payload);
+
+          if(error){
+            alert('Ops! Algo falhou ao enviar. Tente novamente.');
+            console.error(error);
+            return;
+          }
+          alert('Formulário enviado com sucesso!');
+          this.closeAll();
+        }
+      }
+    }
   </script>
 </head>
-<body class="antialiased">
-  <!-- HERO SECTION -->
-  <section class="w-full py-20 bg-center bg-cover" style="background-image:url('assets/img/case1.svg');">
-    <div class="max-w-[1280px] mx-auto px-4 text-center">
-      <h1 class="text-4xl md:text-6xl font-bold text-[#C92C7D]">Transformamos ideias em software que fatura.</h1>
-      <p class="mt-4 text-lg">Construímos soluções digitais completas para impulsionar seu negócio.</p>
-      <a href="#cta-final" class="inline-block mt-6 bg-[#00C8FF] hover:bg-[#7E33FF] text-white font-bold py-3 px-8 rounded-full">Começar agora</a>
+<body class="antialiased" x-cloak>
+  <!-- NAVBAR -->
+  <header class="fixed w-full z-50 transition-all duration-300" :class="navOpen ? 'navbar-glass' : (window.pageYOffset>50?'navbar-glass':'bg-transparent')">
+    <div class="max-w-7xl mx-auto flex items-center justify-between px-6 py-4">
+      <a href="#" class="flex items-center space-x-2">
+        <!-- substitua pelo seu arquivo da marca -->
+        <img src="assets/img/logo-softhaus.svg" style="width: 40px;padding: 0px; border-radius: 4px;"> 
+        <span class="font-heading font-bold text-xl">Softhaus</span>
+      </a>
+      <nav class="hidden md:flex items-center space-x-8">
+        <a href="#servicos" class="hover:text-primary">Serviços</a>
+        <a href="#verticais" class="hover:text-primary">Verticais</a>
+        <a href="#cases" class="hover:text-primary">Cases</a>
+        <a href="#contato" class="hover:text-primary">Contato</a>
+        <button class="btn-primary py-2 px-6 rounded-full" @click="openForm()">Solicitar Orçamento</button>
+      </nav>
+      <button class="md:hidden text-primary" @click="navOpen=!navOpen">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="navOpen?'M6 18L18 6M6 6l12 12':'M4 6h16M4 12h16M4 18h16'"/>
+        </svg>
+      </button>
+    </div>
+    <!-- mobile -->
+    <div x-show="navOpen" x-transition class="md:hidden navbar-glass border-t border-white/10">
+      <div class="px-6 py-4 space-y-3">
+        <a href="#servicos" @click="navOpen=false" class="block py-2">Serviços</a>
+        <a href="#verticais" @click="navOpen=false" class="block py-2">Verticais</a>
+        <a href="#cases" @click="navOpen=false" class="block py-2">Cases</a>
+        <a href="#contato" @click="navOpen=false" class="block py-2">Contato</a>
+        <button class="btn-primary w-full py-3 rounded-full" @click="openForm()">Solicitar Orçamento</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <video autoplay loop muted playsinline class="absolute inset-0 w-full h-full object-cover opacity-40">
+      <source src="video/blackhole.mp4" type="video/mp4" />
+    </video>
+    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/80"></div>
+    <div class="relative z-10 text-center px-6 max-w-4xl" data-aos="fade-up">
+      <h1 class="text-5xl md:text-7xl font-heading font-bold mb-6 leading-tight">
+        Transformamos <span class="text-gradient">ideias</span> em software que <span class="text-gradient">fatura</span>
+      </h1>
+      <p class="text-xl md:text-2xl text-gray-300 mb-10">Seu produto live em semanas, não meses.</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+        <button class="btn-primary py-4 px-8 rounded-full" @click="openForm()">Começar agora</button>
+        <a href="#servicos" class="btn-secondary py-4 px-8 rounded-full">Ver como funciona</a>
+      </div>
     </div>
   </section>
 
-  <!-- COMO TRABALHAMOS SECTION -->
-  <section id="como-trabalhamos" class="py-20">
-    <div class="max-w-[1280px] mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">Como Trabalhamos</h2>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white p-6 rounded-lg shadow text-center">
-          <!-- Heroicon: Light Bulb -->
-          <svg class="w-12 h-12 mx-auto mb-4 text-[#C92C7D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a7 7 0 00-4.95 11.95L7 17h10l-.05-3.05A7 7 0 0012 2z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 21h6"/></svg>
-          <h3 class="text-xl font-semibold mb-2">Ideação</h3>
-          <p class="text-sm">Entendemos o desafio e planejamos a melhor solução.</p>
+  <!-- COMO TRABALHAMOS -->
+  <section id="servicos" class="py-24">
+    <div class="max-w-7xl mx-auto px-6 text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl md:text-5xl font-heading font-bold">Como <span class="text-gradient">Trabalhamos</span></h2>
+    </div>
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 px-6">
+      <div class="card-glass p-8 rounded-2xl text-center cursor-pointer" @click="openCard(0)" data-aos="fade-up" data-aos-delay="100">
+        <div class="icon-container w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center">1</div>
+        <h3 class="text-xl font-heading font-semibold mb-2">Discovery</h3>
+        <p class="text-gray-400 text-sm">
+          Utilizamos <strong>deep research</strong>, design thinking e entrevistas de usuários para identificar oportunidades em apenas 5 dias.
+        </p>
+      </div>
+      <div class="card-glass p-8 rounded-2xl text-center cursor-pointer" @click="openCard(1)" data-aos="fade-up" data-aos-delay="150">
+        <div class="icon-container w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center">2</div>
+        <h3 class="text-xl font-heading font-semibold mb-2">Design</h3>
+        <p class="text-gray-400 text-sm">
+          Prototipamos interfaces <strong>focadas em conversão</strong> e acessibilidade, validando fluxos com testes rápidos A/B.
+        </p>
+      </div>
+      <div class="card-glass p-8 rounded-2xl text-center cursor-pointer" @click="openCard(2)" data-aos="fade-up" data-aos-delay="200">
+        <div class="icon-container w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center">3</div>
+        <h3 class="text-xl font-heading font-semibold mb-2">Dev Ágil</h3>
+        <p class="text-gray-400 text-sm">
+          Sprints quinzenais, CI/CD, testes automatizados e documentação viva para entregar <strong>2‑4× mais rápido</strong>.
+        </p>
+      </div>
+      <div class="card-glass p-8 rounded-2xl text-center cursor-pointer" @click="openCard(3)" data-aos="fade-up" data-aos-delay="250">
+        <div class="icon-container w-16 h-16 mx-auto mb-6 rounded-2xl flex items-center justify-center">4</div>
+        <h3 class="text-xl font-heading font-semibold mb-2">Suporte</h3>
+        <p class="text-gray-400 text-sm">
+          Monitoramento 24/7, SLAs claros e roadmap de evolução contínua para manter seu produto sempre à frente.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- VERTICAIS -->
+  <section id="verticais" class="py-24 section-bg">
+    <div class="max-w-7xl mx-auto px-6 text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl md:text-5xl font-heading font-bold">Nossas <span class="text-gradient">Verticais</span></h2>
+    </div>
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
+      <div class="card-glass rounded-2xl overflow-hidden" data-aos="fade-up" data-aos-delay="100">
+        <div class="p-8">
+          <h3 class="text-2xl font-heading font-bold mb-4">MVPs & Startups</h3>
+          <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+            Valide sua ideia em semanas com protótipos funcionais, arquitetura escalável e mentoria de produto.
+          </p>
+          <button class="btn-secondary py-3 px-6 rounded-full" @click="openForm()">Solicitar proposta</button>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow text-center">
-          <!-- Heroicon: Code -->
-          <svg class="w-12 h-12 mx-auto mb-4 text-[#C92C7D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 18l6-6-6-6M8 6l-6 6 6 6"/></svg>
-          <h3 class="text-xl font-semibold mb-2">Desenvolvimento</h3>
-          <p class="text-sm">Código de qualidade com as melhores práticas.</p>
+      </div>
+      <div class="card-glass rounded-2xl overflow-hidden" data-aos="fade-up" data-aos-delay="150">
+        <div class="p-8">
+          <h3 class="text-2xl font-heading font-bold mb-4">Empresariais</h3>
+          <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+            Sistemas robustos, integrações complexas e automação que reduzem custos operacionais em até 60%.
+          </p>
+          <button class="btn-secondary py-3 px-6 rounded-full" @click="openForm()">Solicitar proposta</button>
         </div>
-        <div class="bg-white p-6 rounded-lg shadow text-center">
-          <!-- Heroicon: Rocket Launch -->
-          <svg class="w-12 h-12 mx-auto mb-4 text-[#C92C7D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12a7 7 0 017-7h2l1-1 2-2v6l-2-2-1 1v2a7 7 0 11-7 7z"/></svg>
-          <h3 class="text-xl font-semibold mb-2">Lançamento</h3>
-          <p class="text-sm">Colocamos o produto no ar com segurança e rapidez.</p>
-        </div>
-        <div class="bg-white p-6 rounded-lg shadow text-center">
-          <!-- Heroicon: Thumb Up -->
-          <svg class="w-12 h-12 mx-auto mb-4 text-[#C92C7D]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 9V5a3 3 0 10-6 0v4H3v12h12.68a4 4 0 004-4l-.01-3a4 4 0 00-4-4H14z"/></svg>
-          <h3 class="text-xl font-semibold mb-2">Suporte</h3>
-          <p class="text-sm">Acompanhamento contínuo para evoluir seu negócio.</p>
+      </div>
+      <div class="card-glass rounded-2xl overflow-hidden" data-aos="fade-up" data-aos-delay="200">
+        <div class="p-8">
+          <h3 class="text-2xl font-heading font-bold mb-4">Inteligência Artificial</h3>
+          <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+            Chatbots, automação preditiva e visão computacional para escalar operações com <strong>IA aplicada</strong>.
+          </p>
+          <button class="btn-secondary py-3 px-6 rounded-full" @click="openForm()">Solicitar proposta</button>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- VERTICAIS SECTION -->
-  <section class="py-20 bg-white">
-    <div class="max-w-[1280px] mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">Verticais</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <a href="small-projects.html" class="block transform hover:scale-105 transition">
-          <div class="bg-[#F8F9FC] border rounded-lg aspect-video flex items-center justify-center">
-            <span class="font-semibold text-xl">Projetos Pequenos</span>
-          </div>
-        </a>
-        <a href="large-projects.html" class="block transform hover:scale-105 transition">
-          <div class="bg-[#F8F9FC] border rounded-lg aspect-video flex items-center justify-center">
-            <span class="font-semibold text-xl">Projetos Grandes</span>
-          </div>
-        </a>
-        <a href="ia.html" class="block transform hover:scale-105 transition">
-          <div class="bg-[#F8F9FC] border rounded-lg aspect-video flex items-center justify-center">
-            <span class="font-semibold text-xl">Inteligência Artificial</span>
-          </div>
-        </a>
-      </div>
+  <!-- CASES -->
+  <section id="cases" class="py-24">
+    <div class="max-w-7xl mx-auto px-6 text-center mb-16" data-aos="fade-up">
+      <h2 class="text-4xl md:text-5xl font-heading font-bold">Casos de <span class="text-gradient">Sucesso</span></h2>
+      <p class="text-gray-400 max-w-2xl mx-auto mt-4 text-lg">Resultados reais alcançados por quem confiou na Softhaus.</p>
     </div>
-  </section>
-
-  <!-- PROVA SOCIAL SECTION -->
-  <section class="py-20">
-    <div class="max-w-[1280px] mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">Quem confia</h2>
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-8 items-center">
-        <img src="assets/img/logo1.svg" alt="Logo 1" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo2.svg" alt="Logo 2" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo3.svg" alt="Logo 3" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo4.svg" alt="Logo 4" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo5.svg" alt="Logo 5" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo6.svg" alt="Logo 6" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo7.svg" alt="Logo 7" class="h-10 mx-auto grayscale">
-        <img src="assets/img/logo8.svg" alt="Logo 8" class="h-10 mx-auto grayscale">
-      </div>
-    </div>
-  </section>
-
-  <!-- CASOS SECTION -->
-  <section class="py-20 bg-[#F8F9FC]">
-    <div class="max-w-[1280px] mx-auto px-4">
-      <h2 class="text-3xl font-bold text-center mb-12">Casos de Sucesso</h2>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow">
-          <img src="assets/img/case1.svg" alt="Case 1" class="w-full">
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">Case 1</h3>
-            <p class="text-sm mb-4">Breve descrição do projeto de sucesso.</p>
-            <a href="#" class="inline-block bg-[#00C8FF] hover:bg-[#7E33FF] text-white font-semibold py-2 px-4 rounded">Ver mais</a>
+    <div class="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 px-6">
+      <!-- AUTOPLAY -->
+      <div class="card-glass rounded-2xl overflow-hidden group" data-aos="fade-up" data-aos-delay="100">
+        <div class="h-48 flex items-center justify-center bg-light/5">
+          <!-- insira sua logo -->
+          <img src="/assets/img/logo-autoplay.svg" alt="Autoplaystudio" class="h-16 opacity-80 group-hover:opacity-100 transition" />
+        </div>
+        <div class="p-6">
+          <h3 class="text-xl font-heading font-bold mb-2">Autoplaystudio</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Plataforma colaborativa para estúdios criativos gerenciarem projetos com clientes em um só lugar, tarefas, mídia, milestones e chat integrados.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-primary text-sm font-semibold">5× crescimento</span>
+            <button class="btn-secondary px-4 py-2 rounded-full text-xs" @click="openForm()">Quero similar</button>
           </div>
         </div>
-        <div class="bg-white rounded-lg shadow">
-          <img src="assets/img/case2.svg" alt="Case 2" class="w-full">
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">Case 2</h3>
-            <p class="text-sm mb-4">Breve descrição do projeto de sucesso.</p>
-            <a href="#" class="inline-block bg-[#00C8FF] hover:bg-[#7E33FF] text-white font-semibold py-2 px-4 rounded">Ver mais</a>
-          </div>
+      </div>
+      <!-- REUNE OAB -->
+<div class="card-glass rounded-2xl overflow-hidden group" data-aos="fade-up" data-aos-delay="150">
+  <div class="h-48 flex items-center justify-center bg-light/5">
+    <span class="text-4xl font-heading text-white/10 group-hover:text-white/20 transition tracking-wide">
+      Reune OAB
+    </span>
+  </div>
+  <div class="p-6">
+    <h3 class="text-xl font-heading font-bold mb-2">Reune OAB</h3>
+    <p class="text-gray-400 text-sm leading-relaxed mb-4">
+      Comunidade que conecta milhares de advogados a eventos, grupos e comissões.
+    </p>
+    <div class="flex items-center justify-between">
+      <span class="text-accent text-sm font-semibold">+5 k membros</span>
+      <button class="btn-secondary px-4 py-2 rounded-full text-xs" @click="openForm()">Quero similar</button>
+    </div>
+  </div>
+</div>
+      <!-- DOCHUB -->
+      <div class="card-glass rounded-2xl overflow-hidden group" data-aos="fade-up" data-aos-delay="200">
+        <div class="h-48 flex items-center justify-center bg-light/5">
+          <img src="/assets/img/logo-dochub.svg" alt="DocHub" class="h-14 opacity-80 group-hover:opacity-100 transition" />
         </div>
-        <div class="bg-white rounded-lg shadow">
-          <img src="assets/img/case3.svg" alt="Case 3" class="w-full">
-          <div class="p-4">
-            <h3 class="text-xl font-semibold mb-2">Case 3</h3>
-            <p class="text-sm mb-4">Breve descrição do projeto de sucesso.</p>
-            <a href="#" class="inline-block bg-[#00C8FF] hover:bg-[#7E33FF] text-white font-semibold py-2 px-4 rounded">Ver mais</a>
+        <div class="p-6">
+          <h3 class="text-xl font-heading font-bold mb-2">DocHub</h3>
+          <p class="text-gray-400 text-sm leading-relaxed mb-4">
+            Plataforma de gestão fiscal que reduziu em 60 % o tempo de processos operacionais para grandes empresas.
+          </p>
+          <div class="flex items-center justify-between">
+            <span class="text-cta text-sm font-semibold">‑60 % tempo</span>
+            <button class="btn-secondary px-4 py-2 rounded-full text-xs" @click="openForm()">Quero similar</button>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- CTA FINAL SECTION -->
-  <section id="cta-final" class="py-20 bg-[#C92C7D] text-center text-white">
-    <h2 class="text-3xl md:text-4xl font-bold mb-6">Pronto para transformar sua ideia em software?</h2>
-    <a href="#" class="inline-block bg-[#00C8FF] text-[#1F1F1F] font-semibold py-3 px-8 rounded-full">Fale Conosco</a>
+  <!-- CTA FINAL -->
+  <section id="cta-final" class="py-32 relative overflow-hidden" data-aos="zoom-in">
+    <div class="absolute inset-0 bg-gradient-to-r from-primary via-accent to-cta opacity-90"></div>
+    <div class="relative z-10 max-w-4xl mx-auto px-6 text-center text-white">
+      <h2 class="text-4xl md:text-6xl font-heading font-bold mb-6">
+        Pronto para transformar sua ideia em software?
+      </h2>
+      <p class="text-xl md:text-2xl mb-12 opacity-90 font-light">
+        Agende uma conversa gratuita e descubra como acelerar seu negócio.
+      </p>
+      <button class="bg-white text-primary font-bold py-4 px-10 rounded-full text-lg transition-all hover:shadow-xl" @click="openForm()">Agendar conversa</button>
+    </div>
   </section>
 
+  <!-- FOOTER -->
+  <footer class="bg-[#0F111A] text-white py-16" id="contato">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-12">
+      <div>
+        <div class="flex items-center space-x-3 mb-6">
+          <img src="assets/img/logo-softhaus.svg" style="width: 80px; ; padding: 0px; border-radius: 4px;">
+          <span class="font-heading font-bold text-2xl">Softhaus</span>
+        </div>
+        <p class="text-gray-400 text-sm max-w-xs leading-relaxed">
+          Soluções digitais sob medida com low‑code, IA e foco total em crescimento.
+        </p>
+      </div>
+      <div class="space-y-3">
+        <h4 class="font-semibold mb-2">Menu</h4>
+        <a href="#servicos" class="block hover:text-primary">Serviços</a>
+        <a href="#verticais" class="block hover:text-primary">Verticais</a>
+        <a href="#cases" class="block hover:text-primary">Cases</a>
+        <a href="#contato" class="block hover:text-primary">Contato</a>
+      </div>
+      <div class="space-y-3">
+        <h4 class="font-semibold mb-2">Contato</h4>
+        <p>contato@softhaus.dev</p>
+        <p>+55 (11) 1234‑5678</p>
+        <button class="btn-primary py-3 px-6 rounded-full mt-4" @click="openForm()">Solicitar orçamento</button>
+      </div>
+    </div>
+    <p class="text-center text-xs mt-10 opacity-60">© 2025 Softhaus. Todos os direitos reservados.</p>
+  </footer>
+
+  <!-- MODALS -->
+  <template x-if="modal">
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-6">
+      <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @click="closeAll()"></div>
+      <!-- FORM MODAL -->
+      <template x-if="modalCard===null">
+        <div class="card-glass w-full max-w-xl p-8 rounded-2xl relative" x-transition>
+          <button class="absolute top-3 right-3 text-gray-400 hover:text-primary" @click="closeAll()">✕</button>
+          <h3 class="text-2xl font-heading font-bold mb-6">Solicitar Orçamento</h3>
+          <form class="space-y-4" @submit.prevent="submit()">
+            <div class="grid md:grid-cols-2 gap-4">
+              <input type="text" placeholder="Nome" class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.nome" required>
+              <input type="email" placeholder="E-mail" class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.email" required>
+            </div>
+            <div class="grid md:grid-cols-2 gap-4">
+              <input type="text" placeholder="Empresa" class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.empresa">
+              <input type="tel" placeholder="Telefone" class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.numero">
+            </div>
+            <textarea placeholder="Descreva seu projeto" class="w-full rounded-md bg-surface/60 border border-white/10 p-3" rows="3" x-model="form.projeto"></textarea>
+            <div class="grid md:grid-cols-2 gap-4">
+              <select class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.orcamento">
+                <option value="" disabled selected>Orçamento estimado</option>
+                <option>Até R$ 50 k</option>
+                <option>R$ 50 k – 100 k</option>
+                <option>+ de R$ 100 k</option>
+              </select>
+              <select class="w-full rounded-md bg-surface/60 border border-white/10 p-3" x-model="form.prazo">
+                <option value="" disabled selected>Prazo desejado</option>
+                <option>1‑2 meses</option>
+                <option>3‑4 meses</option>
+                <option>+ de 4 meses</option>
+              </select>
+            </div>
+            <button type="submit" class="btn-primary w-full py-3 rounded-full">Enviar</button>
+          </form>
+        </div>
+      </template>
+      <!-- CARD DETAIL MODAL -->
+      <template x-if="modalCard!==null">
+        <div class="card-glass w-full max-w-lg p-8 rounded-2xl relative" x-transition>
+          <button class="absolute top-3 right-3 text-gray-400 hover:text-primary" @click="closeAll()">✕</button>
+          <h3 class="text-2xl font-heading font-bold mb-4" x-text="['Discovery','Design','Dev Ágil','Suporte'][modalCard]"></h3>
+          <p class="text-gray-300 leading-relaxed mb-6">
+            Para detalhes aprofundados sobre nosso processo de <span x-text="['Discovery','Design','Dev Ágil','Suporte'][modalCard]"></span>: técnicas, entregáveis e benefícios para o seu projeto, clique abaixo.
+          </p>
+          <button class="btn-primary w-full py-3 rounded-full" @click="openForm()">Quero um orçamento</button>
+        </div>
+      </template>
+    </div>
+  </template>
+
+<script>document.addEventListener('alpine:init',()=>Alpine.data('site',site));</script>
 </body>
 </html>
