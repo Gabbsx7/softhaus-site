@@ -1,0 +1,3 @@
+{
+  "start": "npx serve -s . -l $PORT"
+}
