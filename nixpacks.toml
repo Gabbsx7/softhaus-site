@@ -1,0 +1,14 @@
+[phases.setup]
+nixPkgs = []
+
+[phases.build]
+cmds = []
+
+[phases.start]
+cmds = []
+
+[phases.install]
+cmds = []
+
+[variables]
+NIXPACKS_NODE_PACKAGE = "" 
