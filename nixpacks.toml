@@ -14,5 +14,5 @@ cmds = []
 NIXPACKS_NODE_PACKAGE = ""
 NIXPACKS_STATIC_BUILDER = "true"
 
-[providers]
-staticfile = true 
+[[providers]]
+name = "staticfile" 
