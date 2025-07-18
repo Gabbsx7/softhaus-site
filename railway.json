@@ -4,6 +4,7 @@
     "builder": "static"
   },
   "deploy": {
-    "numReplicas": 1
+    "numReplicas": 1,
+    "restartPolicyType": "NEVER"
   }
 } 
