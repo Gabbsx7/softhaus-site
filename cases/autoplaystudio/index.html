@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-BR" @keydown.window.escape="closeModal()">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AutoplayStudio Case Study – Softhaus</title>
 
-  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🚀%3C/text%3E%3C/svg%3E">
   
   <!-- TailwindCSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -69,8 +69,6 @@
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   
   <style>
-    [x-cloak] { display: none !important; }
-    
     /* Base Styles */
     body {
       background: #000;
@@ -282,6 +280,37 @@
       background: rgba(255, 255, 255, 0.08);
       border-color: rgba(100, 108, 255, 0.3);
     }
+    
+    /* Demo Image Placeholder */
+    .demo-placeholder {
+      background: linear-gradient(45deg, rgba(100, 108, 255, 0.1), rgba(236, 72, 153, 0.1));
+      border: 2px dashed rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 1.125rem;
+      font-weight: 500;
+      min-height: 300px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .demo-placeholder::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+      animation: shimmer 3s infinite;
+    }
+    
+    @keyframes shimmer {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 
   <script>
@@ -365,11 +394,11 @@
     }
   </script>
 </head>
-<body x-data="casePage()" x-cloak>
+<body x-data="casePage()" @keydown.window.escape="closeModal()">
   <!-- Custom Cursor -->
-  <div class="cursor" x-show="!$store.touch" 
-       :class="{ 'hover': $store.cursorHover }"
-       :style="`left: ${$store.cursorX}px; top: ${$store.cursorY}px`">
+  <div class="cursor hidden md:block" 
+       :class="{ 'hover': cursorHover }"
+       :style="`left: ${cursorX}px; top: ${cursorY}px`">
     <div class="cursor-dot"></div>
   </div>
 
@@ -379,14 +408,16 @@
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
       <div class="flex justify-between items-center h-20">
         <a href="/" class="flex items-center space-x-3 group">
-          <img src="assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+          <div class="w-10 h-10 bg-gradient-to-br from-accent to-pink-500 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-lg">S</span>
+          </div>
           <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
         </a>
         
         <nav class="hidden md:flex items-center space-x-12">
-          <a href="../../index.html#work" class="text-sm tracking-wide hover:opacity-60 transition-opacity">WORK</a>
-          <a href="../../index.html#services" class="text-sm tracking-wide hover:opacity-60 transition-opacity">SERVICES</a>
-          <a href="../../index.html#about" class="text-sm tracking-wide hover:opacity-60 transition-opacity">ABOUT</a>
+          <a href="#work" class="text-sm tracking-wide hover:opacity-60 transition-opacity">WORK</a>
+          <a href="#services" class="text-sm tracking-wide hover:opacity-60 transition-opacity">SERVICES</a>
+          <a href="#about" class="text-sm tracking-wide hover:opacity-60 transition-opacity">ABOUT</a>
           <button @click="openModal()" class="btn-primary">
             <span>Start a project</span>
           </button>
@@ -806,10 +837,13 @@ Railway + CI/CD automatizado</pre>
         <div class="relative animate-on-scroll" style="animation-delay: 0.2s">
           <div class="relative rounded-2xl overflow-hidden shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-tr from-accent/20 to-pink-500/20 rounded-2xl"></div>
-            <img src="../assets/autoplay-dashboard.gif" 
-                 alt="AutoplayStudio Dashboard" 
-                 class="w-full h-auto relative z-10 rounded-2xl"
-                 loading="lazy">
+            <div class="demo-placeholder rounded-2xl relative z-10">
+              <div class="text-center">
+                <div class="text-4xl mb-4">📊</div>
+                <div>Dashboard Interface</div>
+                <div class="text-sm opacity-60">Real-time Analytics & Project Management</div>
+              </div>
+            </div>
           </div>
           <!-- Floating UI Elements -->
           <div class="absolute -top-6 -left-6 w-24 h-24 bg-accent/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -826,10 +860,13 @@ Railway + CI/CD automatizado</pre>
         <div class="relative animate-on-scroll lg:order-1">
           <div class="relative rounded-2xl overflow-hidden shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-bl from-cyan-500/20 to-purple-500/20 rounded-2xl"></div>
-            <img src="../assets/autoplay-design-room.gif" 
-                 alt="AutoplayStudio Design Room" 
-                 class="w-full h-auto relative z-10 rounded-2xl"
-                 loading="lazy">
+            <div class="demo-placeholder rounded-2xl relative z-10">
+              <div class="text-center">
+                <div class="text-4xl mb-4">🎨</div>
+                <div>Design Room Interface</div>
+                <div class="text-sm opacity-60">Interactive Canvas & Collaboration Tools</div>
+              </div>
+            </div>
           </div>
           <!-- Floating UI Elements -->
           <div class="absolute -top-8 -right-6 w-20 h-20 bg-cyan-500/20 rounded-full blur-xl animate-float"></div>
@@ -920,10 +957,13 @@ Railway + CI/CD automatizado</pre>
         <div class="relative animate-on-scroll" style="animation-delay: 0.2s">
           <div class="relative rounded-2xl overflow-hidden shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-2xl"></div>
-            <img src="../assets/autoplay-asset-manager.gif" 
-                 alt="AutoplayStudio Asset Manager" 
-                 class="w-full h-auto relative z-10 rounded-2xl"
-                 loading="lazy">
+            <div class="demo-placeholder rounded-2xl relative z-10">
+              <div class="text-center">
+                <div class="text-4xl mb-4">📁</div>
+                <div>Asset Manager Interface</div>
+                <div class="text-sm opacity-60">AI-powered Organization & Search</div>
+              </div>
+            </div>
           </div>
           <!-- Floating UI Elements -->
           <div class="absolute -top-4 -left-8 w-16 h-16 bg-green-500/20 rounded-full blur-xl animate-pulse-slow"></div>
@@ -940,10 +980,13 @@ Railway + CI/CD automatizado</pre>
         <div class="relative animate-on-scroll lg:order-1">
           <div class="relative rounded-2xl overflow-hidden shadow-2xl">
             <div class="absolute inset-0 bg-gradient-to-bl from-orange-500/20 to-red-500/20 rounded-2xl"></div>
-            <img src="../assets/autoplay-collaboration.gif" 
-                 alt="AutoplayStudio Real-time Collaboration" 
-                 class="w-full h-auto relative z-10 rounded-2xl"
-                 loading="lazy">
+            <div class="demo-placeholder rounded-2xl relative z-10">
+              <div class="text-center">
+                <div class="text-4xl mb-4">💬</div>
+                <div>Real-time Collaboration</div>
+                <div class="text-sm opacity-60">Live Presence & Team Communication</div>
+              </div>
+            </div>
           </div>
           <!-- Floating UI Elements -->
           <div class="absolute -top-6 -right-8 w-20 h-20 bg-orange-500/20 rounded-full blur-xl animate-float"></div>
@@ -1237,14 +1280,16 @@ Railway + CI/CD automatizado</pre>
     <div class="max-w-7xl mx-auto">
       <div class="flex flex-col md:flex-row justify-between items-center gap-8">
         <div class="flex items-center space-x-3">
-          <img src="assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+          <div class="w-10 h-10 bg-gradient-to-br from-accent to-pink-500 rounded-lg flex items-center justify-center">
+            <span class="text-white font-bold text-lg">S</span>
+          </div>
           <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
         </div>
         
         <div class="flex gap-8 text-sm text-gray-400">
-          <a href="index.html" class="hover:text-white transition-colors">Home</a>
-          <a href="../../index.html#work" class="hover:text-white transition-colors">Work</a>
-          <a href="../../index.html#about" class="hover:text-white transition-colors">About</a>
+          <a href="/" class="hover:text-white transition-colors">Home</a>
+          <a href="#work" class="hover:text-white transition-colors">Work</a>
+          <a href="#about" class="hover:text-white transition-colors">About</a>
           <a href="#" @click="openModal()" class="hover:text-white transition-colors">Contact</a>
         </div>
       </div>
@@ -1255,164 +1300,241 @@ Railway + CI/CD automatizado</pre>
     </div>
   </footer>
 
-<!-- Contact Modal -->
-<template x-if="modal">
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-6">
-    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeModal()"></div>
-    
-    <div class="glass w-full max-w-xl p-8 md:p-12 rounded-3xl relative animate-fade-up" x-transition>
-      <button class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors" 
-              @click="closeModal()">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-        </svg>
-      </button>
+  <!-- Contact Modal -->
+  <template x-if="modal">
+    <div class="fixed inset-0 z-[70] flex items-center justify-center p-6">
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeModal()"></div>
       
-      <h3 class="text-3xl font-light mb-2">Vamos conversar sobre seu projeto</h3>
-      <p class="text-gray-400 mb-8">Transforme sua ideia em realidade digital</p>
-      
-      <form id="contactForm" class="space-y-6">
-        <div class="grid md:grid-cols-2 gap-6">
-          <input type="text" 
-                 name="nome" 
-                 placeholder="Nome" 
-                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
-                 required>
-          <input type="email" 
-                 name="email" 
-                 placeholder="E-mail" 
-                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
-                 required>
-        </div>
-        
-        <input type="text" 
-               name="empresa" 
-               placeholder="Empresa" 
-               class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
-        
-        <textarea name="descricao" 
-                  placeholder="Conte sobre seu projeto..." 
-                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors resize-none" 
-                  rows="4"></textarea>
-        
-        <div class="grid md:grid-cols-2 gap-6">
-          <select name="budget" 
-                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
-            <option value="" disabled selected>Orçamento estimado</option>
-            <option value="Até R$ 50k">Até R$ 50k</option>
-            <option value="R$ 50k - 100k">R$ 50k - 100k</option>
-            <option value="R$ 100k - 500k">R$ 100k - 500k</option>
-            <option value="Acima de R$ 500k">Acima de R$ 500k</option>
-          </select>
-          
-          <select name="deadline" 
-                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
-            <option value="" disabled selected>Prazo desejado</option>
-            <option value="1-2 meses">1-2 meses</option>
-            <option value="3-4 meses">3-4 meses</option>
-            <option value="5-6 meses">5-6 meses</option>
-            <option value="Mais de 6 meses">Mais de 6 meses</option>
-          </select>
-        </div>
-        
-        <button type="submit" class="btn-primary w-full">
-          <span id="btnText">Enviar mensagem</span>
+      <div class="glass w-full max-w-2xl p-6 md:p-10 rounded-3xl relative animate-fade-up overflow-y-auto max-h-[90vh]" x-transition>
+        <button class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors" 
+                @click="closeModal()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
         </button>
         
-        <!-- Elemento de feedback -->
-        <div id="message" class="mt-4 p-4 rounded-lg hidden"></div>
-      </form>
+        <div class="pt-8">
+          <h3 class="text-3xl font-light mb-3">Vamos conversar sobre seu projeto</h3>
+          <p class="text-gray-400 mb-8">Transforme sua ideia em realidade digital</p>
+          
+          <form id="contactForm" class="space-y-5">
+            <div class="grid md:grid-cols-2 gap-4">
+              <input type="text" 
+                     name="nome" 
+                     placeholder="Nome" 
+                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                     required>
+              <input type="email" 
+                     name="email" 
+                     placeholder="E-mail" 
+                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                     required>
+            </div>
+            
+            <input type="text" 
+                   name="empresa" 
+                   placeholder="Empresa" 
+                   class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            
+            <input type="tel" 
+                   name="numero" 
+                   placeholder="Telefone" 
+                   class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            
+            <textarea name="projeto" 
+                      placeholder="Conte sobre seu projeto..." 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors resize-none" 
+                      rows="5"></textarea>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <select name="orcamento" 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+                <option value="" disabled selected>Orçamento estimado</option>
+                <option value="Até R$ 50k">Até R$ 50k</option>
+                <option value="R$ 50k - 100k">R$ 50k - 100k</option>
+                <option value="R$ 100k - 500k">R$ 100k - 500k</option>
+                <option value="Acima de R$ 500k">Acima de R$ 500k</option>
+              </select>
+              
+              <select name="prazo" 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+                <option value="" disabled selected>Prazo desejado</option>
+                <option value="1-2 meses">1-2 meses</option>
+                <option value="3-4 meses">3-4 meses</option>
+                <option value="5-6 meses">5-6 meses</option>
+                <option value="Mais de 6 meses">Mais de 6 meses</option>
+              </select>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full">
+              <span id="btnText">Enviar mensagem</span>
+            </button>
+            
+            <!-- Elemento de feedback -->
+            <div id="message" class="mt-4 p-4 rounded-lg hidden"></div>
+          </form>
+        </div>
+      </div>
     </div>
-  </div>
-</template>
+  </template>
 
-<script>
-// Initialize Alpine store for cursor
-document.addEventListener('alpine:init', () => {
-  Alpine.store('touch', 'ontouchstart' in window);
-  Alpine.store('cursorX', 0);
-  Alpine.store('cursorY', 0);
-  Alpine.store('cursorHover', false);
-  
-  if (!Alpine.store('touch')) {
-    document.addEventListener('mousemove', (e) => {
-      Alpine.store('cursorX', e.clientX);
-      Alpine.store('cursorY', e.clientY);
-    });
-    
-    // Add hover detection
-    document.querySelectorAll('a, button, [role="button"]').forEach(el => {
-      el.addEventListener('mouseenter', () => Alpine.store('cursorHover', true));
-      el.addEventListener('mouseleave', () => Alpine.store('cursorHover', false));
-    });
-  }
-});
+  <script>
+    // Initialize Alpine with cursor tracking
+    document.addEventListener('alpine:init', () => {
+      Alpine.data('casePage', () => ({
+        scrolled: false,
+        modal: false,
+        mouseX: 0,
+        mouseY: 0,
+        cursorX: 0,
+        cursorY: 0,
+        cursorHover: false,
+        counters: {
+          days: 0,
+          value: 0,
+          roi: 0,
+          savings: 0
+        },
 
-// Aguardar o DOM carregar
-document.addEventListener('DOMContentLoaded', function() {
-  const SCRIPT_URL = 'https://primary-production-9d16.up.railway.app/webhook/23175bc6-23f2-44ca-85cb-43659e6fd20b';
-  
-  // Aguardar o formulário existir (pode ser criado dinamicamente pelo Alpine)
-  const checkFormExists = () => {
-    const form = document.getElementById('contactForm');
-    if (form) {
-      form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const btnText = document.getElementById('btnText');
-        const message = document.getElementById('message');
-        
-        // Mostrar loading
-        btnText.textContent = 'Enviando...';
-        message.classList.add('hidden');
-        
-        // Coletar dados do formulário
-        const formData = new FormData(this);
-        const data = {
-          nome: formData.get('nome'),
-          email: formData.get('email'),
-          empresa: formData.get('empresa') || '',
-          descricao: formData.get('descricao') || '',
-          budget: formData.get('budget') || '',
-          deadline: formData.get('deadline') || ''
-        };
-        
-        try {
-          const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data)
+        init() {
+          // Scroll handler
+          window.addEventListener('scroll', () => {
+            this.scrolled = window.pageYOffset > 50;
           });
+
+          // Mouse move handler for parallax and cursor
+          document.addEventListener('mousemove', (e) => {
+            this.mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+            this.cursorX = e.clientX;
+            this.cursorY = e.clientY;
+          });
+
+          // Hover detection for cursor
+          document.querySelectorAll('a, button, [role="button"]').forEach(el => {
+            el.addEventListener('mouseenter', () => this.cursorHover = true);
+            el.addEventListener('mouseleave', () => this.cursorHover = false);
+          });
+
+          // Intersection Observer for animations
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                
+                // Trigger counters
+                if (entry.target.classList.contains('metrics-section')) {
+                  this.animateCounters();
+                }
+              }
+            });
+          }, { threshold: 0.1 });
+
+          // Observe all animate-on-scroll elements
+          document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+          });
+        },
+
+        animateCounters() {
+          const duration = 2000;
+          const targets = { days: 21, value: 96, roi: 1936, savings: 5.6 };
           
-          const result = await response.json();
-          
-          if (result.success) {
-            message.className = 'mt-4 p-4 rounded-lg bg-green-600/20 border border-green-600 text-green-200';
-            message.textContent = 'Mensagem enviada com sucesso!';
-            this.reset();
-          } else {
-            throw new Error(result.error || 'Erro desconhecido');
-          }
-          
-        } catch (error) {
-          console.error('Erro:', error);
-          message.className = 'mt-4 p-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200';
-          message.textContent = 'Erro ao enviar mensagem. Tente novamente.';
-        } finally {
-          btnText.textContent = 'Enviar mensagem';
-          message.classList.remove('hidden');
+          Object.keys(targets).forEach(key => {
+            let start = 0;
+            const target = targets[key];
+            const increment = target / (duration / 16);
+            
+            const timer = setInterval(() => {
+              start += increment;
+              if (start >= target) {
+                this.counters[key] = target;
+                clearInterval(timer);
+              } else {
+                this.counters[key] = Math.floor(start);
+              }
+            }, 16);
+          });
+        },
+
+        openModal() {
+          this.modal = true;
+          document.body.classList.add('overflow-hidden');
+        },
+
+        closeModal() {
+          this.modal = false;
+          document.body.classList.remove('overflow-hidden');
         }
-      });
-    } else {
-      // Tentar novamente em 100ms
-      setTimeout(checkFormExists, 100);
-    }
-  };
-  
-  checkFormExists();
-});
-</script>
+      }));
+    });
+
+    // Contact form handler
+    document.addEventListener('DOMContentLoaded', function() {
+      const SCRIPT_URL = 'https://primary-production-9d16.up.railway.app/webhook/23175bc6-23f2-44ca-85cb-43659e6fd20b';
+      
+      // Check for form existence (created dynamically by Alpine)
+      const checkFormExists = () => {
+        const form = document.getElementById('contactForm');
+        if (form) {
+          form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const btnText = document.getElementById('btnText');
+            const message = document.getElementById('message');
+            
+            // Show loading
+            btnText.textContent = 'Enviando...';
+            message.classList.add('hidden');
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {
+              nome: formData.get('nome'),
+              email: formData.get('email'),
+              empresa: formData.get('empresa') || '',
+              telefone: formData.get('numero') || '',
+              descrição: formData.get('projeto') || '',
+              orçamento: formData.get('orcamento') || '',
+              prazo: formData.get('prazo') || ''
+            };
+            
+            try {
+              const response = await fetch(SCRIPT_URL, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+              });
+              
+              const result = await response.json();
+              
+              if (result.success) {
+                message.className = 'mt-4 p-4 rounded-lg bg-green-600/20 border border-green-600 text-green-200';
+                message.textContent = 'Mensagem enviada com sucesso!';
+                this.reset();
+              } else {
+                throw new Error(result.error || 'Erro desconhecido');
+              }
+              
+            } catch (error) {
+              console.error('Erro:', error);
+              message.className = 'mt-4 p-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200';
+              message.textContent = 'Erro ao enviar mensagem. Tente novamente.';
+            } finally {
+              btnText.textContent = 'Enviar mensagem';
+              message.classList.remove('hidden');
+            }
+          });
+        } else {
+          // Try again in 100ms
+          setTimeout(checkFormExists, 100);
+        }
+      };
+      
+      checkFormExists();
+    });
+  </script>
 </body>
 </html>
