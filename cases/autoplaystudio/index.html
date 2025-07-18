@@ -1,0 +1,1418 @@
+<!DOCTYPE html>
+<html lang="pt-BR" @keydown.window.escape="closeModal()">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AutoplayStudio Case Study – Softhaus</title>
+
+  <link rel="icon" type="image/svg+xml" href="assets/img/favicon.svg">
+  
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000000',
+            accent:  '#646cff',
+            light:   '#ffffff',
+            surface: '#0a0a0a',
+            muted:   '#666666'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.8s ease-out',
+            'fade-in': 'fadeIn 1s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s ease-in-out infinite',
+            'scroll': 'scroll 2s ease-in-out infinite',
+            'counter': 'counter 2s ease-out forwards',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(60px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' }
+            },
+            scroll: {
+              '0%': { transform: 'translateY(0)', opacity: '0' },
+              '50%': { opacity: '1' },
+              '100%': { transform: 'translateY(10px)', opacity: '0' }
+            },
+            counter: {
+              '0%': { transform: 'translateY(20px)', opacity: '0' },
+              '100%': { transform: 'translateY(0)', opacity: '1' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Alpine -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <style>
+    [x-cloak] { display: none !important; }
+    
+    /* Base Styles */
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Custom Cursor */
+    .cursor {
+      width: 24px;
+      height: 24px;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      transition: transform 0.2s ease-out;
+    }
+    
+    .cursor-dot {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+    
+    .cursor.hover {
+      transform: scale(3);
+    }
+    
+    .cursor.hover .cursor-dot {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Smooth Scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Selection */
+    ::selection {
+      background: #646cff;
+      color: #fff;
+    }
+    
+    /* Gradient Text */
+    .text-gradient {
+      background: linear-gradient(135deg, #646cff 0%, #ec4899 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+      background: #fff;
+      color: #000;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: #646cff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-primary:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    /* Glass Effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Animations */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+    
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Gradient Background */
+    .gradient-bg {
+      background: radial-gradient(circle at 20% 50%, rgba(100, 108, 255, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+    }
+    
+    /* Navbar Transition */
+    .navbar-scrolled {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Timeline */
+    .timeline-item {
+      position: relative;
+      padding-left: 2rem;
+    }
+    
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.5rem;
+      width: 0.5rem;
+      height: 0.5rem;
+      background: #646cff;
+      border-radius: 50%;
+    }
+    
+    .timeline-item::after {
+      content: '';
+      position: absolute;
+      left: 0.125rem;
+      top: 1rem;
+      width: 0.25rem;
+      height: calc(100% - 1rem);
+      background: linear-gradient(to bottom, rgba(100, 108, 255, 0.3), transparent);
+    }
+    
+    .timeline-item:last-child::after {
+      display: none;
+    }
+
+    /* Code Block */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+      font-size: 0.875rem;
+      line-height: 1.6;
+      overflow-x: auto;
+    }
+
+    /* Metric Cards */
+    .metric-card {
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    
+    .metric-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 40px rgba(100, 108, 255, 0.15);
+    }
+
+    /* Architecture Diagram */
+    .arch-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+    
+    .arch-box:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(100, 108, 255, 0.3);
+    }
+  </style>
+
+  <script>
+    // Alpine Component
+    function casePage() {
+      return {
+        scrolled: false,
+        modal: false,
+        mouseX: 0,
+        mouseY: 0,
+        counters: {
+          days: 0,
+          value: 0,
+          roi: 0,
+          savings: 0
+        },
+
+        init() {
+          // Scroll handler
+          window.addEventListener('scroll', () => {
+            this.scrolled = window.pageYOffset > 50;
+          });
+
+          // Mouse move handler for parallax
+          document.addEventListener('mousemove', (e) => {
+            this.mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+          });
+
+          // Intersection Observer for animations
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+                
+                // Trigger counters
+                if (entry.target.classList.contains('metrics-section')) {
+                  this.animateCounters();
+                }
+              }
+            });
+          }, { threshold: 0.1 });
+
+          // Observe all animate-on-scroll elements
+          document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+          });
+        },
+
+        animateCounters() {
+          const duration = 2000;
+          const targets = { days: 21, value: 96, roi: 1936, savings: 5.6 };
+          
+          Object.keys(targets).forEach(key => {
+            let start = 0;
+            const target = targets[key];
+            const increment = target / (duration / 16);
+            
+            const timer = setInterval(() => {
+              start += increment;
+              if (start >= target) {
+                this.counters[key] = target;
+                clearInterval(timer);
+              } else {
+                this.counters[key] = Math.floor(start);
+              }
+            }, 16);
+          });
+        },
+
+        openModal() {
+          this.modal = true;
+          document.body.classList.add('overflow-hidden');
+        },
+
+        closeModal() {
+          this.modal = false;
+          document.body.classList.remove('overflow-hidden');
+        }
+      }
+    }
+  </script>
+</head>
+<body x-data="casePage()" x-cloak>
+  <!-- Custom Cursor -->
+  <div class="cursor" x-show="!$store.touch" 
+       :class="{ 'hover': $store.cursorHover }"
+       :style="`left: ${$store.cursorX}px; top: ${$store.cursorY}px`">
+    <div class="cursor-dot"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="fixed w-full z-50 transition-all duration-500"
+          :class="scrolled ? 'navbar-scrolled' : 'bg-transparent'">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <a href="/" class="flex items-center space-x-3 group">
+          <img src="assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+          <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
+        </a>
+        
+        <nav class="hidden md:flex items-center space-x-12">
+          <a href="../../index.html#work" class="text-sm tracking-wide hover:opacity-60 transition-opacity">WORK</a>
+          <a href="../../index.html#services" class="text-sm tracking-wide hover:opacity-60 transition-opacity">SERVICES</a>
+          <a href="../../index.html#about" class="text-sm tracking-wide hover:opacity-60 transition-opacity">ABOUT</a>
+          <button @click="openModal()" class="btn-primary">
+            <span>Start a project</span>
+          </button>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 gradient-bg opacity-60"></div>
+    
+    <!-- Parallax Elements -->
+    <div class="absolute w-96 h-96 bg-accent/20 rounded-full blur-3xl -top-48 -left-48"
+         :style="`transform: translate(${mouseX * 50}px, ${mouseY * 50}px)`"></div>
+    <div class="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl -bottom-48 -right-48"
+         :style="`transform: translate(${mouseX * -30}px, ${mouseY * -30}px)`"></div>
+    
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 text-center">
+      <div class="space-y-8">
+        <div class="animate-fade-up">
+          <div class="text-sm uppercase tracking-wider text-gray-400 mb-4">Case Study</div>
+          <h1 class="text-6xl md:text-8xl lg:text-9xl font-extralight leading-none tracking-tight">
+            <span class="block">AutoplayStudio</span>
+          </h1>
+        </div>
+        
+        <h2 class="text-3xl md:text-4xl font-light text-gradient animate-fade-up" style="animation-delay: 0.2s">
+          Excelência técnica que redefine padrões de mercado
+        </h2>
+        
+        <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light animate-fade-up" 
+           style="animation-delay: 0.4s">
+          Arquitetura enterprise de nível mundial entregue com precision engineering e inovação disruptiva
+        </p>
+
+        <div class="flex justify-center gap-12 mt-16 animate-fade-in" style="animation-delay: 0.6s">
+          <div class="text-center">
+            <div class="text-4xl font-light">21</div>
+            <div class="text-sm text-gray-500 mt-1">Dias</div>
+          </div>
+          <div class="w-px h-16 bg-gray-800"></div>
+          <div class="text-center">
+            <div class="text-4xl font-light">$96k</div>
+            <div class="text-sm text-gray-500 mt-1">Valor</div>
+          </div>
+          <div class="w-px h-16 bg-gray-800"></div>
+          <div class="text-center">
+            <div class="text-4xl font-light">1,936%</div>
+            <div class="text-sm text-gray-500 mt-1">ROI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-float">
+        <div class="w-6 h-10 border border-white/30 rounded-full flex justify-center">
+          <div class="w-1 h-3 bg-white rounded-full mt-2 animate-scroll"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Challenge Section -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="animate-on-scroll">
+          <h2 class="text-5xl md:text-6xl font-light mb-8">O Desafio</h2>
+          <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+            Um estúdio criativo precisava migrar urgentemente do WeWeb para uma plataforma 
+            escalável que suportasse workflows complexos, colaboração em tempo real e 
+            gestão profissional de assets.
+          </p>
+          
+          <div class="space-y-6">
+            <h3 class="text-2xl font-light mb-4">Limitações Críticas</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Vendor Lock-in</div>
+                  <div class="text-gray-400 text-sm">Dependência total da plataforma WeWeb</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Limitações Técnicas</div>
+                  <div class="text-gray-400 text-sm">Impossibilidade de implementar features complexas</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-red-500 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Escalabilidade</div>
+                  <div class="text-gray-400 text-sm">Arquitetura não preparada para crescimento enterprise</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.2s">
+          <h3 class="text-2xl font-light mb-6">Objetivos do Projeto</h3>
+          <div class="space-y-4">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <div class="font-medium">Migração Completa</div>
+                <div class="text-gray-400 text-sm">Sair do WeWeb mantendo todas as funcionalidades</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <div class="font-medium">Arquitetura Enterprise</div>
+                <div class="text-gray-400 text-sm">Monorepo modular preparado para escala</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <div class="font-medium">Real-time Collaboration</div>
+                <div class="text-gray-400 text-sm">Sistema de colaboração instantânea para equipes</div>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <div class="font-medium">Design Room Avançado</div>
+                <div class="text-gray-400 text-sm">Workspace interativo com canvas profissional</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solution Section -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02]">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20 animate-on-scroll">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">A Solução</h2>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+          Arquitetura enterprise moderna construída do zero com tecnologias de ponta
+        </p>
+      </div>
+
+      <!-- Architecture Diagram -->
+      <div class="mb-20 animate-on-scroll">
+        <h3 class="text-3xl font-light mb-8 text-center">Arquitetura Monorepo</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="arch-box text-center">
+            <div class="text-4xl mb-4">🌐</div>
+            <h4 class="text-xl font-medium mb-2">Web App</h4>
+            <p class="text-gray-400 text-sm">Dashboard principal, gestão de projetos e clientes</p>
+          </div>
+          <div class="arch-box text-center">
+            <div class="text-4xl mb-4">📁</div>
+            <h4 class="text-xl font-medium mb-2">Asset Manager</h4>
+            <p class="text-gray-400 text-sm">Organização profissional de assets digitais</p>
+          </div>
+          <div class="arch-box text-center">
+            <div class="text-4xl mb-4">🎨</div>
+            <h4 class="text-xl font-medium mb-2">Design Room</h4>
+            <p class="text-gray-400 text-sm">Workspace interativo com colaboração real-time</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tech Stack -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 animate-on-scroll">
+        <div>
+          <h3 class="text-3xl font-light mb-8">Stack Tecnológico</h3>
+          <div class="code-block">
+<pre class="text-green-400"><span class="text-blue-300">// Frontend</span>
+Next.js 14 + React 18 + TypeScript
+Shadcn UI + Radix UI + Tailwind CSS
+
+<span class="text-blue-300">// Backend</span>
+Supabase (PostgreSQL + Auth + Storage)
+Edge Functions + Real-time WebSockets
+
+<span class="text-blue-300">// Monorepo</span>
+Turborepo + pnpm workspace
+8 packages compartilhados
+
+<span class="text-blue-300">// Deploy</span>
+Railway + CI/CD automatizado</pre>
+          </div>
+        </div>
+        
+        <div>
+          <h3 class="text-3xl font-light mb-8">Decisões Arquiteturais</h3>
+          <div class="space-y-6">
+            <div class="border-l-4 border-accent pl-6">
+              <h4 class="text-lg font-medium mb-2">Monorepo Modular</h4>
+              <p class="text-gray-400 text-sm">
+                Código compartilhado, CI/CD unificado e desenvolvimento ágil
+              </p>
+            </div>
+            <div class="border-l-4 border-pink-500 pl-6">
+              <h4 class="text-lg font-medium mb-2">Supabase Backend</h4>
+              <p class="text-gray-400 text-sm">
+                Real-time features, auth e storage em uma única plataforma
+              </p>
+            </div>
+            <div class="border-l-4 border-cyan-500 pl-6">
+              <h4 class="text-lg font-medium mb-2">TypeScript First</h4>
+              <p class="text-gray-400 text-sm">
+                Type safety completa do frontend ao backend
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Timeline Section -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-4xl mx-auto">
+      <div class="text-center mb-20 animate-on-scroll">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">Timeline de Execução</h2>
+        <p class="text-xl text-gray-400">21 dias de desenvolvimento intenso</p>
+      </div>
+
+      <div class="space-y-12">
+        <div class="timeline-item animate-on-scroll">
+          <div class="mb-2">
+            <span class="text-sm text-accent font-medium">Semana 1</span>
+            <span class="text-sm text-gray-500 ml-4">Dias 1-7</span>
+          </div>
+          <h3 class="text-2xl font-light mb-3">Setup & Arquitetura</h3>
+          <p class="text-gray-300 mb-4">
+            Configuração do monorepo, definição da arquitetura e setup inicial do Supabase. 
+            Migração dos dados principais do WeWeb.
+          </p>
+          <div class="flex gap-4 text-sm">
+            <span class="bg-white/5 px-3 py-1 rounded-full">Turborepo</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Database Schema</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Auth Setup</span>
+          </div>
+        </div>
+
+        <div class="timeline-item animate-on-scroll">
+          <div class="mb-2">
+            <span class="text-sm text-accent font-medium">Semana 2</span>
+            <span class="text-sm text-gray-500 ml-4">Dias 8-14</span>
+          </div>
+          <h3 class="text-2xl font-light mb-3">Core Features</h3>
+          <p class="text-gray-300 mb-4">
+            Desenvolvimento das principais aplicações: Web App com dashboard, 
+            Asset Manager básico e estrutura inicial do Design Room.
+          </p>
+          <div class="flex gap-4 text-sm">
+            <span class="bg-white/5 px-3 py-1 rounded-full">Dashboard</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Asset Manager</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Real-time</span>
+          </div>
+        </div>
+
+        <div class="timeline-item animate-on-scroll">
+          <div class="mb-2">
+            <span class="text-sm text-accent font-medium">Semana 3</span>
+            <span class="text-sm text-gray-500 ml-4">Dias 15-21</span>
+          </div>
+          <h3 class="text-2xl font-light mb-3">Polish & Deploy</h3>
+          <p class="text-gray-300 mb-4">
+            Design Room interativo com Konva.js, otimizações de performance, 
+            testes finais e deploy em produção na Railway.
+          </p>
+          <div class="flex gap-4 text-sm">
+            <span class="bg-white/5 px-3 py-1 rounded-full">Design Tools</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Performance</span>
+            <span class="bg-white/5 px-3 py-1 rounded-full">Production</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Results Section -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02] metrics-section animate-on-scroll">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">Resultados & Impacto</h2>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+          Valor enterprise entregue em tempo recorde com economia massiva
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
+        <div class="metric-card glass p-8 rounded-2xl text-center">
+          <div class="text-4xl font-light text-gradient mb-2" x-text="counters.days"></div>
+          <div class="text-sm text-gray-400">Dias para entregar</div>
+          <div class="text-xs text-gray-500 mt-1">vs 6+ meses típico</div>
+        </div>
+        <div class="metric-card glass p-8 rounded-2xl text-center">
+          <div class="text-4xl font-light text-gradient mb-2">$<span x-text="counters.value"></span>k</div>
+          <div class="text-sm text-gray-400">Valor entregue</div>
+          <div class="text-xs text-gray-500 mt-1">Equivalente de mercado</div>
+        </div>
+        <div class="metric-card glass p-8 rounded-2xl text-center">
+          <div class="text-4xl font-light text-gradient mb-2"><span x-text="counters.roi"></span>%</div>
+          <div class="text-sm text-gray-400">ROI gerado</div>
+          <div class="text-xs text-gray-500 mt-1">Valor vs investimento</div>
+        </div>
+        <div class="metric-card glass p-8 rounded-2xl text-center">
+          <div class="text-4xl font-light text-gradient mb-2">$<span x-text="counters.savings"></span>k</div>
+          <div class="text-sm text-gray-400">Economia anual</div>
+          <div class="text-xs text-gray-500 mt-1">Licenças SaaS evitadas</div>
+        </div>
+      </div>
+
+      <!-- Comparison Chart -->
+      <div class="glass p-8 rounded-2xl">
+        <h3 class="text-3xl font-light mb-8 text-center">Comparação de Qualidade Enterprise</h3>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr class="border-b border-white/10">
+                <th class="text-left py-4 px-4 font-light">Critério</th>
+                <th class="text-left py-4 px-4 font-light">Agências Tradicionais</th>
+                <th class="text-left py-4 px-4 font-light">Consultores Freelance</th>
+                <th class="text-left py-4 px-4 font-light">Soluções SaaS</th>
+                <th class="text-left py-4 px-4 font-light text-accent">Softhaus</th>
+              </tr>
+            </thead>
+            <tbody class="text-sm">
+              <tr class="border-b border-white/5">
+                <td class="py-4 px-4 font-medium">Arquitetura Enterprise</td>
+                <td class="py-4 px-4 text-gray-400">Padrão</td>
+                <td class="py-4 px-4 text-gray-400">Variável</td>
+                <td class="py-4 px-4 text-gray-400">Limitada</td>
+                <td class="py-4 px-4 text-accent font-medium">Excepcional</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-4 px-4 font-medium">Escalabilidade</td>
+                <td class="py-4 px-4 text-gray-400">Boa</td>
+                <td class="py-4 px-4 text-gray-400">Inconsistente</td>
+                <td class="py-4 px-4 text-gray-400">Vendor Lock-in</td>
+                <td class="py-4 px-4 text-accent font-medium">Ilimitada</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-4 px-4 font-medium">Propriedade do Código</td>
+                <td class="py-4 px-4 text-gray-400">Completa</td>
+                <td class="py-4 px-4 text-gray-400">Completa</td>
+                <td class="py-4 px-4 text-gray-400">Nenhuma</td>
+                <td class="py-4 px-4 text-accent font-medium">Completa</td>
+              </tr>
+              <tr class="border-b border-white/5">
+                <td class="py-4 px-4 font-medium">Inovação Técnica</td>
+                <td class="py-4 px-4 text-gray-400">Conservadora</td>
+                <td class="py-4 px-4 text-gray-400">Variável</td>
+                <td class="py-4 px-4 text-gray-400">Limitada</td>
+                <td class="py-4 px-4 text-accent font-medium">Cutting-edge</td>
+              </tr>
+              <tr class="bg-accent/10 border-b border-accent/20">
+                <td class="py-4 px-4 font-bold">Diferencial Competitivo</td>
+                <td class="py-4 px-4 text-gray-400">Baixo</td>
+                <td class="py-4 px-4 text-gray-400">Médio</td>
+                <td class="py-4 px-4 text-gray-400">Nenhum</td>
+                <td class="py-4 px-4 font-bold text-accent">Transformacional</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Showcase - Dashboard -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="animate-on-scroll">
+          <div class="mb-6">
+            <span class="text-sm uppercase tracking-wider text-accent font-medium">Dashboard Principal</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-light mb-6">
+            Command Center Inteligente
+          </h2>
+          <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+            Dashboard executivo que centraliza métricas, projetos e colaboração em tempo real. 
+            Interface limpa e dados acionáveis para tomada de decisão estratégica.
+          </p>
+          
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Analytics em Tempo Real</h3>
+                <p class="text-gray-400 text-sm">Métricas de performance e KPIs atualizados instantaneamente</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Gestão Centralizada</h3>
+                <p class="text-gray-400 text-sm">Controle total de projetos, equipes e clientes em uma interface</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Notifications Inteligentes</h3>
+                <p class="text-gray-400 text-sm">Sistema de alertas contextual que prioriza o que realmente importa</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative animate-on-scroll" style="animation-delay: 0.2s">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-tr from-accent/20 to-pink-500/20 rounded-2xl"></div>
+            <img src="autoplaystudio/assets/autoplay-dashboard.gif" 
+                 alt="AutoplayStudio Dashboard" 
+                 class="w-full h-auto relative z-10 rounded-2xl"
+                 loading="lazy">
+          </div>
+          <!-- Floating UI Elements -->
+          <div class="absolute -top-6 -left-6 w-24 h-24 bg-accent/20 rounded-full blur-xl animate-pulse-slow"></div>
+          <div class="absolute -bottom-8 -right-8 w-32 h-32 bg-pink-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1s"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Showcase - Design Room -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02]">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="relative animate-on-scroll lg:order-1">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-bl from-cyan-500/20 to-purple-500/20 rounded-2xl"></div>
+            <img src="autoplaystudio/assets/autoplay-design-room.gif" 
+                 alt="AutoplayStudio Design Room" 
+                 class="w-full h-auto relative z-10 rounded-2xl"
+                 loading="lazy">
+          </div>
+          <!-- Floating UI Elements -->
+          <div class="absolute -top-8 -right-6 w-20 h-20 bg-cyan-500/20 rounded-full blur-xl animate-float"></div>
+          <div class="absolute -bottom-6 -left-8 w-28 h-28 bg-purple-500/20 rounded-full blur-xl animate-float" style="animation-delay: 2s"></div>
+        </div>
+        
+        <div class="animate-on-scroll lg:order-2" style="animation-delay: 0.2s">
+          <div class="mb-6">
+            <span class="text-sm uppercase tracking-wider text-accent font-medium">Design Room</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-light mb-6">
+            Criatividade Sem Limites
+          </h2>
+          <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+            Workspace colaborativo onde ideias ganham vida. Canvas infinito com ferramentas 
+            profissionais e colaboração em tempo real que revoluciona o processo criativo.
+          </p>
+          
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Canvas Profissional</h3>
+                <p class="text-gray-400 text-sm">Engine de renderização avançado com Konva.js para performance excepcional</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Colaboração Visual</h3>
+                <p class="text-gray-400 text-sm">Cursores múltiplos, comentários contextuais e presença em tempo real</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Ferramentas Avançadas</h3>
+                <p class="text-gray-400 text-sm">Layers, grupos, alinhamento automático e export multi-formato</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Showcase - Asset Manager -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="animate-on-scroll">
+          <div class="mb-6">
+            <span class="text-sm uppercase tracking-wider text-accent font-medium">Asset Manager</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-light mb-6">
+            Organização Inteligente
+          </h2>
+          <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+            Sistema de gestão de assets que transforma caos em ordem. AI-powered tagging, 
+            busca semântica e workflows que aceleram a criatividade.
+          </p>
+          
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">AI-Powered Search</h3>
+                <p class="text-gray-400 text-sm">Busca por conteúdo, cores, metadata e contexto visual inteligente</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Version Control</h3>
+                <p class="text-gray-400 text-sm">Histórico completo, branching e merge de assets com workflow approval</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Brand Guidelines</h3>
+                <p class="text-gray-400 text-sm">Enforcement automático de guidelines e consistência de marca</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="relative animate-on-scroll" style="animation-delay: 0.2s">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-tr from-green-500/20 to-blue-500/20 rounded-2xl"></div>
+            <img src="autoplaystudio/assets/autoplay-asset-manager.gif" 
+                 alt="AutoplayStudio Asset Manager" 
+                 class="w-full h-auto relative z-10 rounded-2xl"
+                 loading="lazy">
+          </div>
+          <!-- Floating UI Elements -->
+          <div class="absolute -top-4 -left-8 w-16 h-16 bg-green-500/20 rounded-full blur-xl animate-pulse-slow"></div>
+          <div class="absolute -bottom-10 -right-4 w-24 h-24 bg-blue-500/20 rounded-full blur-xl animate-pulse-slow" style="animation-delay: 1.5s"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- App Showcase - Real-time Collaboration -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02]">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div class="relative animate-on-scroll lg:order-1">
+          <div class="relative rounded-2xl overflow-hidden shadow-2xl">
+            <div class="absolute inset-0 bg-gradient-to-bl from-orange-500/20 to-red-500/20 rounded-2xl"></div>
+            <img src="autoplaystudio/assets/autoplay-collaboration.gif" 
+                 alt="AutoplayStudio Real-time Collaboration" 
+                 class="w-full h-auto relative z-10 rounded-2xl"
+                 loading="lazy">
+          </div>
+          <!-- Floating UI Elements -->
+          <div class="absolute -top-6 -right-8 w-20 h-20 bg-orange-500/20 rounded-full blur-xl animate-float"></div>
+          <div class="absolute -bottom-8 -left-6 w-32 h-32 bg-red-500/20 rounded-full blur-xl animate-float" style="animation-delay: 3s"></div>
+        </div>
+        
+        <div class="animate-on-scroll lg:order-2" style="animation-delay: 0.2s">
+          <div class="mb-6">
+            <span class="text-sm uppercase tracking-wider text-accent font-medium">Real-time Collaboration</span>
+          </div>
+          <h2 class="text-4xl md:text-5xl font-light mb-6">
+            Sinergia Instantânea
+          </h2>
+          <p class="text-xl text-gray-300 mb-8 leading-relaxed">
+            Colaboração que flui naturalmente. Presença em tempo real, comunicação contextual 
+            e workflows que eliminam friction entre equipes distribuídas.
+          </p>
+          
+          <div class="space-y-6">
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Live Presence</h3>
+                <p class="text-gray-400 text-sm">Cursores ao vivo, avatars e indicadores de atividade em tempo real</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Contextual Comments</h3>
+                <p class="text-gray-400 text-sm">Feedback ancorado visualmente com threads e resolução automática</p>
+              </div>
+            </div>
+            <div class="flex items-start gap-4">
+              <div class="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+              <div>
+                <h3 class="font-medium mb-1">Conflict Resolution</h3>
+                <p class="text-gray-400 text-sm">Sistema inteligente de merge que previne conflitos de edição</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Technical Deep Dive -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20 animate-on-scroll">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">Excelência Técnica</h2>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+          Arquitetura moderna desenhada para escala, performance e manutenibilidade
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16">
+        <div class="animate-on-scroll">
+          <h3 class="text-3xl font-light mb-8">Estrutura do Monorepo</h3>
+          <div class="code-block">
+<pre class="text-green-400"><span class="text-blue-300">autoplaystudio/</span>
+├── <span class="text-yellow-300">apps/</span>
+│   ├── web/              <span class="text-gray-500"># App principal</span>
+│   ├── asset-manager/    <span class="text-gray-500"># Gestão de assets</span>
+│   └── design-room/      <span class="text-gray-500"># Workspace design</span>
+├── <span class="text-yellow-300">packages/</span>
+│   ├── auth/            <span class="text-gray-500"># Autenticação</span>
+│   ├── canvas/          <span class="text-gray-500"># Ferramentas design</span>
+│   ├── core/            <span class="text-gray-500"># Lógica de negócio</span>
+│   ├── db/              <span class="text-gray-500"># Database utils</span>
+│   ├── hooks/           <span class="text-gray-500"># React hooks</span>
+│   ├── realtime/        <span class="text-gray-500"># WebSocket features</span>
+│   ├── ui/              <span class="text-gray-500"># UI components</span>
+│   └── utils/           <span class="text-gray-500"># Utilities</span>
+└── <span class="text-yellow-300">supabase/</span>
+    ├── functions/       <span class="text-gray-500"># Edge functions</span>
+    └── migrations/      <span class="text-gray-500"># DB schema</span></pre>
+          </div>
+        </div>
+        
+        <div class="animate-on-scroll" style="animation-delay: 0.2s">
+          <h3 class="text-3xl font-light mb-8">Decisões Arquiteturais</h3>
+          <div class="space-y-6">
+            <div class="border-l-4 border-accent pl-6">
+              <h4 class="text-lg font-medium mb-2">Monorepo com Turborepo</h4>
+              <p class="text-gray-400 text-sm">
+                Código compartilhado, CI/CD unificado e mudanças atômicas entre apps
+              </p>
+            </div>
+            <div class="border-l-4 border-green-500 pl-6">
+              <h4 class="text-lg font-medium mb-2">Supabase Backend</h4>
+              <p class="text-gray-400 text-sm">
+                Real-time features, auth nativo e edge functions para performance
+              </p>
+            </div>
+            <div class="border-l-4 border-purple-500 pl-6">
+              <h4 class="text-lg font-medium mb-2">Arquitetura Modular</h4>
+              <p class="text-gray-400 text-sm">
+                Packages escaláveis com boundaries bem definidas
+              </p>
+            </div>
+            <div class="border-l-4 border-orange-500 pl-6">
+              <h4 class="text-lg font-medium mb-2">TypeScript First</h4>
+              <p class="text-gray-400 text-sm">
+                Type safety completa em todo o stack
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Showcase -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02]">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20 animate-on-scroll">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">Funcionalidades Entregues</h2>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+          Plataforma completa com recursos enterprise em 21 dias
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div class="glass p-8 rounded-2xl animate-on-scroll">
+          <div class="text-4xl mb-6">🚀</div>
+          <h3 class="text-xl font-medium mb-3">Gestão de Projetos</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Sistema completo para criação, acompanhamento e entrega de projetos criativos com milestones e tarefas.
+          </p>
+        </div>
+
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.1s">
+          <div class="text-4xl mb-6">📁</div>
+          <h3 class="text-xl font-medium mb-3">Asset Manager</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Organização avançada de assets digitais com categorização, busca e controle de versões.
+          </p>
+        </div>
+
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.2s">
+          <div class="text-4xl mb-6">👥</div>
+          <h3 class="text-xl font-medium mb-3">Portal do Cliente</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Dashboard dedicado para clientes acompanharem projetos e fornecerem feedback em tempo real.
+          </p>
+        </div>
+
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.3s">
+          <div class="text-4xl mb-6">💬</div>
+          <h3 class="text-xl font-medium mb-3">Colaboração Real-time</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Chat ao vivo, comentários contextuais e presença da equipe com WebSockets.
+          </p>
+        </div>
+
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.4s">
+          <div class="text-4xl mb-6">🎨</div>
+          <h3 class="text-xl font-medium mb-3">Design Room</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Workspace interativo com canvas, ferramentas de design e colaboração visual instantânea.
+          </p>
+        </div>
+
+        <div class="glass p-8 rounded-2xl animate-on-scroll" style="animation-delay: 0.5s">
+          <div class="text-4xl mb-6">🔐</div>
+          <h3 class="text-xl font-medium mb-3">Controle de Acesso</h3>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Permissões granulares baseadas em roles para diferentes tipos de usuários.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonial -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-4xl mx-auto text-center animate-on-scroll">
+      <blockquote class="text-3xl md:text-4xl font-light text-gray-300 mb-8 leading-relaxed">
+        "A Softhaus entregou uma solução de nível enterprise que superou produtos estabelecidos no mercado. 
+        A arquitetura é impecável, a performance excepcional, e a capacidade técnica da equipe é simplesmente extraordinária. 
+        Investimos em excelência e recebemos uma plataforma que nos diferencia completamente da concorrência."
+      </blockquote>
+      <div class="text-xl font-medium text-white">CEO</div>
+      <div class="text-gray-500 mt-2">AutoplayStudio</div>
+    </div>
+  </section>
+
+  <!-- Lessons Learned -->
+  <section class="py-32 px-6 lg:px-12 bg-white/[0.02]">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-20 animate-on-scroll">
+        <h2 class="text-5xl md:text-6xl font-light mb-6">Lições Aprendidas</h2>
+        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+          Insights valiosos para projetos enterprise futuros
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+        <div class="space-y-8 animate-on-scroll">
+          <div>
+            <h3 class="text-2xl font-light mb-4 text-green-400">O que funcionou</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Monorepo desde o início</div>
+                  <div class="text-gray-400 text-sm">Acelerou desenvolvimento e manutenção</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Supabase como backend</div>
+                  <div class="text-gray-400 text-sm">Real-time features out-of-the-box</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-green-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">TypeScript rigoroso</div>
+                  <div class="text-gray-400 text-sm">Preveniu bugs e acelerou refactoring</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-8 animate-on-scroll" style="animation-delay: 0.2s">
+          <div>
+            <h3 class="text-2xl font-light mb-4 text-yellow-400">Desafios enfrentados</h3>
+            <div class="space-y-4">
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Migração de dados</div>
+                  <div class="text-gray-400 text-sm">WeWeb não oferecia export estruturado</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Real-time complexity</div>
+                  <div class="text-gray-400 text-sm">Sincronização entre múltiplas apps</div>
+                </div>
+              </div>
+              <div class="flex items-start gap-4">
+                <div class="w-2 h-2 bg-yellow-400 rounded-full mt-2 flex-shrink-0"></div>
+                <div>
+                  <div class="font-medium">Performance optimization</div>
+                  <div class="text-gray-400 text-sm">Canvas rendering com muitos elementos</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="py-32 px-6 lg:px-12 relative overflow-hidden">
+    <div class="absolute inset-0 gradient-bg opacity-30"></div>
+    
+    <div class="relative z-10 max-w-4xl mx-auto text-center animate-on-scroll">
+      <h2 class="text-5xl md:text-7xl font-light mb-8">
+        Eleve seu negócio ao
+        <span class="block text-gradient">próximo nível</span>
+      </h2>
+      <p class="text-xl text-gray-400 mb-12">
+        Invista em excelência técnica e diferenciais competitivos duradouros
+      </p>
+      
+      <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+        <button @click="openModal()" class="btn-primary text-lg">
+          <span>Discutir meu projeto</span>
+        </button>
+        <a href="/" class="btn-secondary">
+          <span>Ver portfolio completo</span>
+        </a>
+      </div>
+      
+      <p class="text-sm text-gray-500 mt-8">
+        Projetos enterprise a partir de $100k
+      </p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-16 px-6 lg:px-12 border-t border-white/10">
+    <div class="max-w-7xl mx-auto">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-8">
+        <div class="flex items-center space-x-3">
+          <img src="assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+          <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
+        </div>
+        
+        <div class="flex gap-8 text-sm text-gray-400">
+          <a href="index.html" class="hover:text-white transition-colors">Home</a>
+          <a href="../../index.html#work" class="hover:text-white transition-colors">Work</a>
+          <a href="../../index.html#about" class="hover:text-white transition-colors">About</a>
+          <a href="#" @click="openModal()" class="hover:text-white transition-colors">Contact</a>
+        </div>
+      </div>
+      
+      <div class="pt-8 mt-8 border-t border-white/10 text-center text-sm text-gray-500">
+        © 2024 Softhaus. Crafted with passion in Brazil.
+      </div>
+    </div>
+  </footer>
+
+<!-- Contact Modal -->
+<template x-if="modal">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-6">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeModal()"></div>
+    
+    <div class="glass w-full max-w-xl p-8 md:p-12 rounded-3xl relative animate-fade-up" x-transition>
+      <button class="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors" 
+              @click="closeModal()">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+      
+      <h3 class="text-3xl font-light mb-2">Vamos conversar sobre seu projeto</h3>
+      <p class="text-gray-400 mb-8">Transforme sua ideia em realidade digital</p>
+      
+      <form id="contactForm" class="space-y-6">
+        <div class="grid md:grid-cols-2 gap-6">
+          <input type="text" 
+                 name="nome" 
+                 placeholder="Nome" 
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                 required>
+          <input type="email" 
+                 name="email" 
+                 placeholder="E-mail" 
+                 class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                 required>
+        </div>
+        
+        <input type="text" 
+               name="empresa" 
+               placeholder="Empresa" 
+               class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+        
+        <textarea name="descricao" 
+                  placeholder="Conte sobre seu projeto..." 
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors resize-none" 
+                  rows="4"></textarea>
+        
+        <div class="grid md:grid-cols-2 gap-6">
+          <select name="budget" 
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            <option value="" disabled selected>Orçamento estimado</option>
+            <option value="Até R$ 50k">Até R$ 50k</option>
+            <option value="R$ 50k - 100k">R$ 50k - 100k</option>
+            <option value="R$ 100k - 500k">R$ 100k - 500k</option>
+            <option value="Acima de R$ 500k">Acima de R$ 500k</option>
+          </select>
+          
+          <select name="deadline" 
+                  class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            <option value="" disabled selected>Prazo desejado</option>
+            <option value="1-2 meses">1-2 meses</option>
+            <option value="3-4 meses">3-4 meses</option>
+            <option value="5-6 meses">5-6 meses</option>
+            <option value="Mais de 6 meses">Mais de 6 meses</option>
+          </select>
+        </div>
+        
+        <button type="submit" class="btn-primary w-full">
+          <span id="btnText">Enviar mensagem</span>
+        </button>
+        
+        <!-- Elemento de feedback -->
+        <div id="message" class="mt-4 p-4 rounded-lg hidden"></div>
+      </form>
+    </div>
+  </div>
+</template>
+
+<script>
+// Initialize Alpine store for cursor
+document.addEventListener('alpine:init', () => {
+  Alpine.store('touch', 'ontouchstart' in window);
+  Alpine.store('cursorX', 0);
+  Alpine.store('cursorY', 0);
+  Alpine.store('cursorHover', false);
+  
+  if (!Alpine.store('touch')) {
+    document.addEventListener('mousemove', (e) => {
+      Alpine.store('cursorX', e.clientX);
+      Alpine.store('cursorY', e.clientY);
+    });
+    
+    // Add hover detection
+    document.querySelectorAll('a, button, [role="button"]').forEach(el => {
+      el.addEventListener('mouseenter', () => Alpine.store('cursorHover', true));
+      el.addEventListener('mouseleave', () => Alpine.store('cursorHover', false));
+    });
+  }
+});
+
+// Aguardar o DOM carregar
+document.addEventListener('DOMContentLoaded', function() {
+  const SCRIPT_URL = 'https://primary-production-9d16.up.railway.app/webhook/23175bc6-23f2-44ca-85cb-43659e6fd20b';
+  
+  // Aguardar o formulário existir (pode ser criado dinamicamente pelo Alpine)
+  const checkFormExists = () => {
+    const form = document.getElementById('contactForm');
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btnText = document.getElementById('btnText');
+        const message = document.getElementById('message');
+        
+        // Mostrar loading
+        btnText.textContent = 'Enviando...';
+        message.classList.add('hidden');
+        
+        // Coletar dados do formulário
+        const formData = new FormData(this);
+        const data = {
+          nome: formData.get('nome'),
+          email: formData.get('email'),
+          empresa: formData.get('empresa') || '',
+          descricao: formData.get('descricao') || '',
+          budget: formData.get('budget') || '',
+          deadline: formData.get('deadline') || ''
+        };
+        
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            message.className = 'mt-4 p-4 rounded-lg bg-green-600/20 border border-green-600 text-green-200';
+            message.textContent = 'Mensagem enviada com sucesso!';
+            this.reset();
+          } else {
+            throw new Error(result.error || 'Erro desconhecido');
+          }
+          
+        } catch (error) {
+          console.error('Erro:', error);
+          message.className = 'mt-4 p-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200';
+          message.textContent = 'Erro ao enviar mensagem. Tente novamente.';
+        } finally {
+          btnText.textContent = 'Enviar mensagem';
+          message.classList.remove('hidden');
+        }
+      });
+    } else {
+      // Tentar novamente em 100ms
+      setTimeout(checkFormExists, 100);
+    }
+  };
+  
+  checkFormExists();
+});
+</script>
+</body>
+</html>
