@@ -1,13 +1,14 @@
-FROM nginx:alpine
+FROM node:alpine
 
-# Copiar arquivos do site
-COPY . /usr/share/nginx/html/
+# Install serve
+RUN npm install -g serve@14.2.1
 
-# Copiar configuração nginx customizada
-COPY nginx.conf /etc/nginx/nginx.conf
+# Copy files
+COPY . /app
+WORKDIR /app
 
-# Expor porta 80
-EXPOSE 80
+# Remove any config files
+RUN rm -f serve.json package*.json server.js
 
-# Comando para iniciar nginx
-CMD ["nginx", "-g", "daemon off;"] 
+# Start serve with Railway-compatible configuration
+CMD ["sh", "-c", "serve . -l tcp://0.0.0.0:${PORT:-3000}"]

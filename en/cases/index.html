@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio – Softhaus</title>
+
+  <link rel="icon" type="image/svg+xml" href="/assets/img/favicon.svg">
+  
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="/assets/js/language-detector.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000000',
+            accent: '#646cff',
+            light: '#ffffff',
+            surface: '#0a0a0a',
+            muted: '#666666'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'fade-up': 'fadeUp 0.8s ease-out',
+            'fade-in': 'fadeIn 1s ease-out',
+            'slide-up': 'slideUp 0.6s ease-out',
+            'float': 'float 6s ease-in-out infinite',
+            'pulse-slow': 'pulse 4s ease-in-out infinite',
+            'scroll': 'scroll 2s ease-in-out infinite',
+          },
+          keyframes: {
+            fadeUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            fadeIn: {
+              '0%': { opacity: '0' },
+              '100%': { opacity: '1' }
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(60px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' }
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-20px)' }
+            },
+            scroll: {
+              '0%': { transform: 'translateY(0)', opacity: '0' },
+              '50%': { opacity: '1' },
+              '100%': { transform: 'translateY(10px)', opacity: '0' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Alpine -->
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  
+  <style>
+    /* Base Styles */
+    body {
+      background: #000;
+      color: #fff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    /* Custom Cursor */
+    .cursor {
+      width: 24px;
+      height: 24px;
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      mix-blend-mode: difference;
+      transition: transform 0.2s ease-out;
+    }
+    
+    .cursor-dot {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #fff;
+      border-radius: 50%;
+      opacity: 0.5;
+    }
+    
+    .cursor.hover {
+      transform: scale(3);
+    }
+    
+    .cursor.hover .cursor-dot {
+      background: rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Smooth Scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+    
+    /* Selection */
+    ::selection {
+      background: #646cff;
+      color: #fff;
+    }
+    
+    /* Gradient Text */
+    .text-gradient {
+      background: linear-gradient(135deg, #646cff 0%, #ec4899 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    /* Button Styles */
+    .btn-primary {
+      background: #fff;
+      color: #000;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: #646cff;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.6s ease, height 0.6s ease;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(255, 255, 255, 0.2);
+    }
+    
+    .btn-primary:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+    
+    .btn-primary span {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .btn-secondary {
+      background: transparent;
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    /* Glass Effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    /* Animations */
+    .animate-on-scroll {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 0.8s ease-out;
+    }
+    
+    .animate-on-scroll.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    /* Gradient Background */
+    .gradient-bg {
+      background: radial-gradient(circle at 20% 50%, rgba(100, 108, 255, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.15) 0%, transparent 50%),
+                  radial-gradient(circle at 40% 20%, rgba(6, 182, 212, 0.15) 0%, transparent 50%);
+    }
+    
+    /* Navbar Transition */
+    .navbar-scrolled {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+  </style>
+
+  <script>
+    // Alpine Component
+    function site() {
+      return {
+        navOpen: false,
+        modal: false,
+        scrolled: false,
+        mouseX: 0,
+        mouseY: 0,
+
+        init() {
+          // Scroll handler
+          window.addEventListener('scroll', () => {
+            this.scrolled = window.pageYOffset > 50;
+          });
+
+          // Mouse move handler for parallax
+          document.addEventListener('mousemove', (e) => {
+            this.mouseX = (e.clientX / window.innerWidth - 0.5) * 2;
+            this.mouseY = (e.clientY / window.innerHeight - 0.5) * 2;
+          });
+
+          // Intersection Observer for animations
+          const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting) {
+                entry.target.classList.add('visible');
+              }
+            });
+          }, { threshold: 0.1 });
+
+          // Observe all animate-on-scroll elements
+          document.querySelectorAll('.animate-on-scroll').forEach(el => {
+            observer.observe(el);
+          });
+        },
+
+        openModal() {
+          this.modal = true;
+          document.body.classList.add('overflow-hidden');
+        },
+
+        closeModal() {
+          this.modal = false;
+          document.body.classList.remove('overflow-hidden');
+        }
+      }
+    }
+  </script>
+</head>
+<body x-data="site()" x-cloak>
+  <!-- Custom Cursor -->
+  <div class="cursor" x-show="!$store.touch" 
+       :class="{ 'hover': $store.cursorHover }"
+       :style="`left: ${$store.cursorX}px; top: ${$store.cursorY}px`">
+    <div class="cursor-dot"></div>
+  </div>
+
+  <!-- Navigation -->
+  <header class="fixed w-full z-50 transition-all duration-500"
+          :class="scrolled ? 'navbar-scrolled' : 'bg-transparent'">
+    <div class="max-w-7xl mx-auto px-6 lg:px-12">
+      <div class="flex justify-between items-center h-20">
+        <a href="/en/" class="flex items-center space-x-3 group">
+          <img src="/assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+          <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
+        </a>
+        
+        <!-- Desktop Nav -->
+        <nav class="hidden md:flex items-center space-x-12">
+          <a href="/en/#work" class="text-sm tracking-wide hover:opacity-60 transition-opacity">WORK</a>
+          <a href="/en/#services" class="text-sm tracking-wide hover:opacity-60 transition-opacity">SERVICES</a>
+          <a href="/en/#about" class="text-sm tracking-wide hover:opacity-60 transition-opacity">ABOUT</a>
+          <button @click="openModal()" class="btn-primary">
+            <span>Start a project</span>
+          </button>
+          <a href="/cases/" class="text-sm text-gray-400 hover:text-white transition-colors">
+            🇧🇷 PT
+          </a>
+        </nav>
+
+        <!-- Mobile Menu Toggle -->
+        <button @click="navOpen = !navOpen" class="md:hidden">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  x-show="!navOpen" d="M4 6h16M4 12h16M4 18h16" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" 
+                  x-show="navOpen" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div x-show="navOpen" x-transition 
+         class="md:hidden absolute top-20 left-0 w-full bg-black/95 backdrop-blur-lg border-t border-white/10">
+      <div class="px-6 py-8 space-y-6">
+        <a href="/en/#work" @click="navOpen = false" class="block text-lg">Work</a>
+        <a href="/en/#services" @click="navOpen = false" class="block text-lg">Services</a>
+        <a href="/en/#about" @click="navOpen = false" class="block text-lg">About</a>
+        <button @click="openModal()" class="btn-primary w-full">
+          <span>Start a project</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Animated Background -->
+    <div class="absolute inset-0 gradient-bg opacity-60"></div>
+    
+    <!-- Parallax Elements -->
+    <div class="absolute w-96 h-96 bg-accent/20 rounded-full blur-3xl -top-48 -left-48"
+         :style="`transform: translate(${mouseX * 50}px, ${mouseY * 50}px)`"></div>
+    <div class="absolute w-96 h-96 bg-pink-500/20 rounded-full blur-3xl -bottom-48 -right-48"
+         :style="`transform: translate(${mouseX * -30}px, ${mouseY * -30}px)`"></div>
+    
+    <div class="relative z-10 max-w-7xl mx-auto px-6 lg:px-12 text-center">
+      <div class="space-y-8">
+        <div class="animate-fade-up">
+          <div class="text-sm uppercase tracking-wider text-gray-400 mb-4">Portfolio</div>
+          <h1 class="text-6xl md:text-8xl lg:text-9xl font-extralight leading-none tracking-tight">
+            <span class="block">Selected</span>
+            <span class="block font-light text-gradient">Works</span>
+          </h1>
+        </div>
+        
+        <h2 class="text-3xl md:text-4xl font-light text-gradient animate-fade-up" style="animation-delay: 0.2s">
+          Excellence that redefines market standards
+        </h2>
+        
+        <p class="text-xl md:text-2xl text-gray-400 max-w-3xl mx-auto font-light animate-fade-up" 
+           style="animation-delay: 0.4s">
+          Enterprise-level architecture delivered with precision engineering and disruptive innovation
+        </p>
+
+        <div class="flex justify-center gap-12 mt-16 animate-fade-in" style="animation-delay: 0.6s">
+          <div class="text-center">
+            <div class="text-4xl font-light">12+</div>
+            <div class="text-sm text-gray-500 mt-1">Premium Projects</div>
+          </div>
+          <div class="w-px h-16 bg-gray-800"></div>
+          <div class="text-center">
+            <div class="text-4xl font-light">100%</div>
+            <div class="text-sm text-gray-500 mt-1">Client Focus</div>
+          </div>
+          <div class="w-px h-16 bg-gray-800"></div>
+          <div class="text-center">
+            <div class="text-4xl font-light">∞</div>
+            <div class="text-sm text-gray-500 mt-1">Possibilities</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Scroll Indicator -->
+      <div class="absolute bottom-12 left-1/2 transform -translate-x-1/2 animate-float">
+        <div class="w-6 h-10 border border-white/30 rounded-full flex justify-center">
+          <div class="w-1 h-3 bg-white rounded-full mt-2 animate-scroll"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Cases Grid -->
+  <section class="py-32 px-6 lg:px-12">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        
+        <!-- AutoplayStudio Case -->
+        <div class="group animate-on-scroll">
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-accent/20 to-pink-500/20 p-8 h-96">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+            <div class="relative z-10 h-full flex flex-col justify-between">
+              <div>
+                <div class="text-sm text-accent mb-2">01</div>
+                <h3 class="text-2xl font-light mb-2">AutoplayStudio</h3>
+                <p class="text-gray-400 text-sm">Collaborative platform for creative studios</p>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="flex gap-4 text-sm">
+                  <div>
+                    <div class="text-xl font-light">21</div>
+                    <div class="text-gray-500">Days</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">$96k</div>
+                    <div class="text-gray-500">Value</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">1,936%</div>
+                    <div class="text-gray-500">ROI</div>
+                  </div>
+                </div>
+                
+                <div class="mt-8">
+                  <a href="/en/cases/autoplaystudio" class="btn-primary">
+                    <span>View full case</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PhaVo Case -->
+        <div class="group animate-on-scroll" style="animation-delay: 0.1s">
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 p-8 h-96">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+            <div class="relative z-10 h-full flex flex-col justify-between">
+              <div>
+                <div class="text-sm text-accent mb-2">02</div>
+                <h3 class="text-2xl font-light mb-2">PhaVo</h3>
+                <p class="text-gray-400 text-sm">Brazilian alternative to Circle</p>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="flex gap-4 text-sm">
+                  <div>
+                    <div class="text-xl font-light">Enterprise</div>
+                    <div class="text-gray-500">Architecture</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">Unlimited</div>
+                    <div class="text-gray-500">Scalability</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">95%</div>
+                    <div class="text-gray-500">Engagement</div>
+                  </div>
+                </div>
+                
+                <div class="mt-8">
+                  <a href="/en/cases/phavo" class="btn-primary">
+                    <span>View full case</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DocHub Case -->
+        <div class="group animate-on-scroll" style="animation-delay: 0.2s">
+          <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-green-500/20 to-blue-500/20 p-8 h-96">
+            <div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+            <div class="relative z-10 h-full flex flex-col justify-between">
+              <div>
+                <div class="text-sm text-accent mb-2">03</div>
+                <h3 class="text-2xl font-light mb-2">DocHub</h3>
+                <p class="text-gray-400 text-sm">Intelligent fiscal management</p>
+              </div>
+              
+              <div class="space-y-4">
+                <div class="flex gap-4 text-sm">
+                  <div>
+                    <div class="text-xl font-light">60%</div>
+                    <div class="text-gray-500">Time reduction</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">$2M+</div>
+                    <div class="text-gray-500">Captured notes</div>
+                  </div>
+                  <div>
+                    <div class="text-xl font-light">100%</div>
+                    <div class="text-gray-500">Compliance</div>
+                  </div>
+                </div>
+                
+                <div class="mt-8">
+                  <a href="/en/cases/dochub" class="btn-primary">
+                    <span>View full case</span>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CTA Section -->
+      <div class="text-center mt-20 animate-on-scroll">
+        <h2 class="text-4xl md:text-5xl font-light mb-6">
+          Ready to create something
+          <span class="block text-gradient">extraordinary?</span>
+        </h2>
+        <p class="text-xl text-gray-400 mb-8 max-w-2xl mx-auto">
+          Transform your vision into digital reality
+        </p>
+        
+        <div class="flex flex-col sm:flex-row gap-6 justify-center items-center">
+          <button @click="openModal()" class="btn-primary">
+            <span>Start project</span>
+          </button>
+          <a href="/en/" class="btn-secondary">
+            <span>Back to site</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="py-16 px-6 lg:px-12 border-t border-white/10">
+    <div class="max-w-7xl mx-auto">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+        <div class="md:col-span-2">
+          <div class="flex items-center space-x-3 mb-6">
+            <img src="/assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
+            <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
+          </div>
+          <p class="text-gray-400 max-w-sm">
+            We transform ambitious visions into extraordinary digital products 
+            through exceptional design and cutting-edge engineering.
+          </p>
+        </div>
+        
+        <div>
+          <h4 class="font-medium mb-4">Quick Links</h4>
+          <div class="space-y-3 text-gray-400">
+            <a href="/en/#work" class="block hover:text-white transition-colors">Work</a>
+            <a href="/en/#services" class="block hover:text-white transition-colors">Services</a>
+            <a href="/en/#about" class="block hover:text-white transition-colors">About</a>
+            <a href="#" @click="openModal()" class="block hover:text-white transition-colors">Contact</a>
+          </div>
+        </div>
+        
+        <div>
+          <h4 class="font-medium mb-4">Connect</h4>
+          <div class="space-y-3 text-gray-400">
+            <a href="https://www.linkedin.com/company/softhaus-dev/" class="block hover:text-white transition-colors">LinkedIn</a>
+            <a href="https://www.instagram.com/softhausdev/" class="block hover:text-white transition-colors">Instagram</a>
+          </div>
+        </div>
+      </div>
+      
+      <div class="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm text-gray-500">
+          © 2024 Softhaus. Crafted with passion in Brazil.
+        </div>
+        <div class="text-sm text-gray-500">
+          <a href="tel:+5547999085741" class="hover:text-white transition-colors">
+            +55 47 99908-5741
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Contact Modal -->
+  <template x-if="modal">
+    <div class="fixed inset-0 z-[70] flex items-center justify-center p-6">
+      <div class="absolute inset-0 bg-black/80 backdrop-blur-sm" @click="closeModal()"></div>
+      
+      <div class="glass w-full max-w-2xl p-6 md:p-10 rounded-3xl relative animate-fade-up overflow-y-auto max-h-[90vh]" x-transition>
+        <button class="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors" 
+                @click="closeModal()">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        
+        <div class="pt-8">
+          <h3 class="text-3xl font-light mb-3">Let's talk about your project</h3>
+          <p class="text-gray-400 mb-8">Transform your idea into digital reality</p>
+          
+          <form id="contactForm" class="space-y-5">
+            <div class="grid md:grid-cols-2 gap-4">
+              <input type="text" 
+                     name="nome" 
+                     placeholder="Name" 
+                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                     required>
+              <input type="email" 
+                     name="email" 
+                     placeholder="Email" 
+                     class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors" 
+                     required>
+            </div>
+            
+            <input type="text" 
+                   name="empresa" 
+                   placeholder="Company" 
+                   class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            
+            <input type="tel" 
+                   name="numero" 
+                   placeholder="Phone" 
+                   class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+            
+            <textarea name="projeto" 
+                      placeholder="Tell us about your project..." 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors resize-none" 
+                      rows="5"></textarea>
+            
+            <div class="grid md:grid-cols-2 gap-4">
+              <select name="orcamento" 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+                <option value="" disabled selected>Estimated budget</option>
+                <option value="Up to $50k">Up to $50k</option>
+                <option value="$50k - 100k">$50k - 100k</option>
+                <option value="$100k - 500k">$100k - 500k</option>
+                <option value="Above $500k">Above $500k</option>
+              </select>
+              
+              <select name="prazo" 
+                      class="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 focus:border-accent focus:outline-none transition-colors">
+                <option value="" disabled selected>Desired timeline</option>
+                <option value="1-2 months">1-2 months</option>
+                <option value="3-4 months">3-4 months</option>
+                <option value="5-6 months">5-6 months</option>
+                <option value="More than 6 months">More than 6 months</option>
+              </select>
+            </div>
+            
+            <button type="submit" class="btn-primary w-full">
+              <span id="btnText">Send message</span>
+            </button>
+            
+            <!-- Feedback element -->
+            <div id="message" class="mt-4 p-4 rounded-lg hidden"></div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </template>
+
+<script>
+// Initialize Alpine store for cursor
+document.addEventListener('alpine:init', () => {
+  Alpine.store('touch', 'ontouchstart' in window);
+  Alpine.store('cursorX', 0);
+  Alpine.store('cursorY', 0);
+  Alpine.store('cursorHover', false);
+  
+  if (!Alpine.store('touch')) {
+    document.addEventListener('mousemove', (e) => {
+      Alpine.store('cursorX', e.clientX);
+      Alpine.store('cursorY', e.clientY);
+    });
+    
+    // Add hover detection
+    document.querySelectorAll('a, button, [role="button"]').forEach(el => {
+      el.addEventListener('mouseenter', () => Alpine.store('cursorHover', true));
+      el.addEventListener('mouseleave', () => Alpine.store('cursorHover', false));
+    });
+  }
+});
+
+// Form submission handler
+document.addEventListener('DOMContentLoaded', function() {
+  const SCRIPT_URL = 'https://primary-production-9d16.up.railway.app/webhook/23175bc6-23f2-44ca-85cb-43659e6fd20b';
+  
+  const checkFormExists = () => {
+    const form = document.getElementById('contactForm');
+    if (form) {
+      form.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const btnText = document.getElementById('btnText');
+        const message = document.getElementById('message');
+        
+        // Show loading
+        btnText.textContent = 'Sending...';
+        message.classList.add('hidden');
+        
+        // Collect form data
+        const formData = new FormData(this);
+        const data = {
+          nome: formData.get('nome'),
+          email: formData.get('email'),
+          empresa: formData.get('empresa') || '',
+          telefone: formData.get('numero') || '',
+          descricao: formData.get('projeto') || '',
+          orcamento: formData.get('orcamento') || '',
+          prazo: formData.get('prazo') || ''
+        };
+        
+        try {
+          const response = await fetch(SCRIPT_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data)
+          });
+          
+          const result = await response.json();
+          
+          if (result.success) {
+            message.className = 'mt-4 p-4 rounded-lg bg-green-600/20 border border-green-600 text-green-200';
+            message.textContent = 'Message sent successfully!';
+            this.reset();
+          } else {
+            throw new Error(result.error || 'Unknown error');
+          }
+          
+        } catch (error) {
+          console.error('Error:', error);
+          message.className = 'mt-4 p-4 rounded-lg bg-red-600/20 border border-red-600 text-red-200';
+          message.textContent = 'Error sending message. Please try again.';
+        } finally {
+          btnText.textContent = 'Send message';
+          message.classList.remove('hidden');
+        }
+      });
+    } else {
+      // Try again in 100ms
+      setTimeout(checkFormExists, 100);
+    }
+  };
+  
+  checkFormExists();
+});
+</script>
+</body>
+</html> 

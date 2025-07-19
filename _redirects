@@ -1,8 +1,0 @@
-# Redirects for clean URLs
-/cases /cases/index.html 200
-/cases/autoplaystudio /cases/autoplaystudio/index.html 200
-/cases/dochub /cases/dochub/index.html 200
-/cases/phavo /cases/phavo/index.html 200
-
-# Handle 404s gracefully
-/* /index.html 404 

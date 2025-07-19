@@ -59,10 +59,11 @@
     }
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="/assets/js/language-detector.js"></script>
 
   <script>
-    const SUPABASE_URL = 'https://vfolhmfhdsinqqgdssve.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmb2xobWZoZHNpbnFxZ2Rzc3ZlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDY4OTMzOTMsImV4cCI6MjA2MjQ2OTM5M30.LXOTfL9SmnQR7N9Dl3BfI4L5Z3OhoQckvuraD2CdXgg';
+    const SUPABASE_URL = '';
+    const SUPABASE_ANON_KEY = '';
     window.$supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   </script>
 
@@ -342,7 +343,7 @@
           :class="scrolled ? 'navbar-scrolled' : 'bg-transparent'">
     <div class="max-w-7xl mx-auto px-6 lg:px-12">
       <div class="flex justify-between items-center h-20">
-        <a href="#" class="flex items-center space-x-3 group">
+        <a href="/" class="flex items-center space-x-3 group">
           <img src="assets/img/logo-softhaus.svg" alt="Softhaus" class="w-10 h-10">
           <span class="text-2xl font-light tracking-wider">SOFTHAUS</span>
         </a>
@@ -355,6 +356,9 @@
           <button @click="openForm()" class="btn-primary">
             <span>Start a project</span>
           </button>
+          <a href="/en/" class="text-sm text-gray-400 hover:text-white transition-colors">
+            🇺🇸 EN
+          </a>
         </nav>
 
         <!-- Mobile Menu Toggle -->
@@ -414,7 +418,7 @@
           <button @click="openForm()" class="btn-primary">
             <span>Começar projeto</span>
           </button>
-          <a href="cases" class="btn-secondary">
+          <a href="/cases/" class="btn-secondary">
             Ver portfolio
           </a>
         </div>
